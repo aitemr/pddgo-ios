@@ -1,0 +1,5 @@
+{
+  "images" : [ { "filename" : "videobanner.png", "idiom" : "universal" } ],
+
+  "info" : { "author" : "xcode", "version" : 1 }
+}

@@ -2,16 +2,19 @@
 //  pddApp.swift
 //  pdd
 //
-//  Created by aitemr on 26.05.2026.
-//
 
 import SwiftUI
 
 @main
 struct pddApp: App {
+    init() {
+        // Warm up the question bank off the first view render.
+        _ = QuestionBank.shared
+    }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .tint(AppColor.brandBlue)
         }
     }
 }
