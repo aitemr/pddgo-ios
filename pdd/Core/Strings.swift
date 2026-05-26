@@ -114,9 +114,85 @@ enum L {
         "Правильных ответов: \(done) из \(total)"
     }
 
+    // Paywall
+    static let paywallHeroPrefix = "Начни с "
+    static let paywallHeroHighlight = "3 дней бесплатно"
+    static let paywallSubtitle = "Видеоуроки, все тесты, ИИ-помощник\nАкжол — без ограничений"
+    static let paywallFeatureVideos = "Все видеоуроки без ограничений"
+    static let paywallFeatureTests = "Полный банк тестовых вопросов"
+    static let paywallFeatureAkzhol = "Неограниченные чаты с Акжолом"
+    static let paywallFeatureMistakes = "Персональный анализ ошибок"
+    static let paywallPlanWeekly = "Неделя"
+    static let paywallPlanMonthly = "Месяц"
+    static let paywallPriceWeekly = "990 ₸"
+    static let paywallPriceMonthly = "2 490 ₸"
+    static let paywallPeriodWeekly = "в неделю"
+    static let paywallPeriodMonthly = "в месяц"
+    static let paywallPerDayWeekly = "141 ₸/день"
+    static let paywallPerDayMonthly = "83 ₸/день"
+    static let paywallBadgeBestDeal = "Лучшее предложение"
+    static let paywallCancelAnytime = "Отмена в любое время"
+    static let paywallDisclaimerAfterTrial = "После пробного периода спишется стоимость\nвыбранного плана. Подписка автопродляется."
+    static let paywallRestorePurchases = "Восстановить покупки"
+    static func paywallCtaWithPrice(_ price: String) -> String { "Продолжить за \(price)" }
+
     // Onboarding
     static let onboardingNext = "Далее"
     static let onboardingStart = "Начать"
+    // Survey
+    static let surveyNext = "Следующий вопрос"
+    static let surveyFinish = "Завершить"
+    static let surveyVehicleQuestion = "На каком транспортном средстве ты планируешь передвигаться?"
+    static let surveyVehicleOptions: [(id: String, icon: String, title: String, subtitle: String)] = [
+        ("car", "Car", "Легковой автомобиль", "Категория B"),
+        ("truck", "Truck", "Грузовик", "Категория C, D"),
+        ("bike", "Bike", "Мотоцикл", "Категория A"),
+    ]
+    static let surveyRegionQuestion = "Выбери свой регион"
+    static let surveyRegionSearchHint = "Поиск города или области"
+    static let surveyRegions: [String] = [
+        "Абайская область", "Акмолинская область", "Актюбинская область", "Алматинская область",
+        "Атырауская область", "г. Актау", "г. Актобе", "г. Алматы", "г. Астана", "г. Атырау",
+        "г. Караганда", "г. Кокшетау", "г. Костанай", "г. Кызылорда", "г. Павлодар",
+        "г. Петропавловск", "г. Семей", "г. Талдыкорган", "г. Тараз", "г. Туркестан",
+        "г. Уральск", "г. Усть-Каменогорск", "г. Шымкент", "Жамбылская область",
+        "Жетысуская область", "Западно-Казахстанская область", "Восточно-Казахстанская область",
+        "Карагандинская область", "Костанайская область", "Кызылординская область",
+        "Мангистауская область", "Павлодарская область", "Северо-Казахстанская область",
+        "Туркестанская область", "Улытауская область",
+    ].sorted { $0.lowercased() < $1.lowercased() }
+    static let surveyKnowledgeQuestion = "С чего начнём твой путь к правам?"
+    static let surveyKnowledgeOptions = ["Я только начинаю", "Уже немного знаю правила", "Хочу проверить знания перед экзаменом"]
+
+    // Loading
+    static let loadingStart = "Начинаем анализ..."
+    static let loadingSteps: [(end: Double, text: String)] = [
+        (0.30, "Собираем ваши ответы..."),
+        (0.75, "Готовим план обучения..."),
+        (0.99, "Анализируем ваш результат..."),
+    ]
+
+    // Social proof
+    static let socialProofHero1 = "Приложение "
+    static let socialProofHero2 = "№1 "
+    static let socialProofHero3 = "для подготовки\nк экзамену ПДД в РК"
+    static let socialProofStats: [(value: String, label: String)] = [
+        ("1 000+", "вопросов\nпо ПДД РК"), ("95%", "сдают с\nпервого раза"), ("24/7", "ИИ-помощник\nна связи"),
+    ]
+    static let socialProofFeatures: [(icon: String, color: String, title: String, subtitle: String)] = [
+        ("books.vertical", "#1B8FEF", "1 000+ вопросов по ПДД РК", "Актуальная база — точно как на официальном экзамене"),
+        ("", "#34C759", "ИИ-помощник Акжол", "Объяснит любой вопрос понятным языком 24/7"),
+        ("play.circle", "#FF9500", "Видеоуроки от инструкторов", "Разборы ситуаций на дороге с визуальными примерами"),
+        ("chart.bar.xaxis", "#AF52DE", "Персональный анализ ошибок", "Видишь где слабые места и работаешь именно над ними"),
+    ]
+    static let socialProofReviewsTitle = "Что говорят пользователи"
+    static let socialProofContinue = "Продолжить"
+    static let socialProofReviews: [(name: String, date: String, text: String)] = [
+        ("Алия М.", "12 апр 2025", "Сдала теорию с первого раза! Акжол объяснял каждый вопрос так понятно, что даже самые сложные знаки перестали путать. Очень советую."),
+        ("Нурлан К.", "2 мая 2025", "Купил подписку за три дня до экзамена — успел прогнать весь банк вопросов. Ни одного незнакомого билета не попалось. Результат — 18/20."),
+        ("Дамир Т.", "18 окт 2025", "Видеоуроки реально помогают понять логику правил, не просто зубрёжка. Акжол всегда подскажет, если что-то непонятно — прямо как живой инструктор."),
+    ]
+
     static let onboardingSlides: [(img: String, title: String, subtitle: String)] = [
         ("onbCar", "Начни свой путь\nк водительскому\nудостоверению!", "Проходи видео-курс и выполняй задания"),
         ("OnbWay", "Проверь свои знания —\nпроходи пробные тесты\nпрямо в приложении", "Отвечай на вопросы, как на экзамене"),

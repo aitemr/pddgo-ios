@@ -2,14 +2,22 @@
 //  OnboardingFlow.swift
 //  pdd
 //
-//  Splash → carousel → survey → social auth → loading → social proof (spec §8).
+//  Splash → carousel → survey → social auth → loading → social proof (spec §8),
+//  matched to the Flutter screens.
 //
 
 import SwiftUI
 
 struct OnboardingFlow: View {
     @Environment(AppState.self) private var app
-    @State private var step: Step = .carousel
+    @State private var step: Step = {
+        #if DEBUG
+        let s = UserDefaults.standard.integer(forKey: "debug_onb_step")
+        return [Step.carousel, .survey, .auth, .loading, .socialProof][min(s, 4)]
+        #else
+        return .carousel
+        #endif
+    }()
 
     enum Step { case carousel, survey, auth, loading, socialProof }
 
@@ -17,16 +25,12 @@ struct OnboardingFlow: View {
         ZStack {
             switch step {
             case .carousel:    CarouselView { step = .survey }
-            case .survey:      SurveyView { step = .auth }
+            case .survey:      SurveyView(onBack: { step = .carousel }) { step = .auth }
             case .auth:        SocialAuthView { step = .loading }
             case .loading:     LoadingView { step = .socialProof }
             case .socialProof: SocialProofView { app.completeOnboarding() }
             }
         }
-        .animation(.easeInOut(duration: 0.26), value: stepKey)
-    }
-    private var stepKey: Int {
-        switch step { case .carousel: 0; case .survey: 1; case .auth: 2; case .loading: 3; case .socialProof: 4 }
     }
 }
 
@@ -53,35 +57,27 @@ private struct CarouselView: View {
                                 .padding(.top, 40)
                             Text(slide.subtitle)
                                 .font(.system(size: 16, design: .rounded))
-                                .foregroundStyle(.white).multilineTextAlignment(.center)
-                                .padding(.top, 16)
+                                .foregroundStyle(.white).multilineTextAlignment(.center).padding(.top, 16)
                             Spacer()
                         }
-                        .padding(24)
-                        .tag(i)
+                        .padding(24).tag(i)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-
                 HStack(spacing: 8) {
                     ForEach(0..<slides.count, id: \.self) { i in
                         Capsule().fill(.white.opacity(page == i ? 1 : 0.3)).frame(width: 6, height: 6)
                     }
-                }
-                .padding(.bottom, 22)
-
+                }.padding(.bottom, 22)
                 Button {
                     if page < slides.count - 1 { withAnimation { page += 1 } } else { onDone() }
                 } label: {
                     Text(page < slides.count - 1 ? L.onboardingNext : L.onboardingStart)
                         .font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(AppColor.brandBlue)
-                        .frame(maxWidth: .infinity).frame(height: 76)
-                        .background(.white, in: Capsule())
+                        .frame(maxWidth: .infinity).frame(height: 76).background(.white, in: Capsule())
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 30).padding(.bottom, 16)
+                .buttonStyle(.plain).padding(.horizontal, 30).padding(.bottom, 16)
             }
-            .padding(.top, 1)
         }
     }
 }
@@ -89,98 +85,151 @@ private struct CarouselView: View {
 // MARK: - Survey
 
 private struct SurveyView: View {
+    var onBack: () -> Void
     var onDone: () -> Void
+
     @State private var q = 0
-    @State private var vehicle: String?
-    @State private var region: String?
-    @State private var level: String?
+    @State private var answers: [Int: String] = [:]
     @State private var search = ""
 
-    private let vehicles = [("Car", "Легковой автомобиль"), ("Truck", "Грузовой автомобиль"), ("Bike", "Мотоцикл")]
-    private let levels = ["Я только начинаю", "Уже немного знаю правила", "Хочу проверить знания перед экзаменом"]
-    private let regions = ["Алматы", "Астана", "Шымкент", "Караганда", "Актобе", "Тараз", "Павлодар",
-                           "Усть-Каменогорск", "Семей", "Атырау", "Костанай", "Кызылорда", "Уральск",
-                           "Петропавловск", "Актау", "Темиртау", "Туркестан", "Кокшетау", "Талдыкорган",
-                           "Экибастуз", "Рудный", "Жезказган", "Балхаш", "Кентау"]
-
-    private var canProceed: Bool {
-        switch q { case 0: vehicle != nil; case 1: region != nil; default: level != nil }
-    }
+    private var progress: Double { [0.33, 0.66, 1.0][q] }
+    private var selected: String? { answers[q] }
+    private var isLast: Bool { q == 2 }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("GO").font(.system(size: 36, weight: .heavy, design: .rounded))
-                .foregroundStyle(AppColor.brandBlue).frame(maxWidth: .infinity).padding(.top, 12)
-
-            HStack(spacing: 8) {
-                BackButton { if q > 0 { q -= 1 } }
-                ProgressView(value: Double(q + 1), total: 3).tint(AppColor.brandBlue)
-            }
-            .padding(.horizontal, AppLayout.onboardingMargin).padding(.vertical, 12)
-
+        VStack(spacing: 0) {
+            appBar
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 0) {
                     switch q {
-                    case 0: questionBlock("С каким транспортом\nты готовишься?") {
-                        ForEach(vehicles, id: \.0) { v in
-                            optionRow(title: v.1, icon: v.0, selected: vehicle == v.0) { vehicle = v.0 }
-                        }
-                    }
-                    case 1: regionQuestion
-                    default: questionBlock("С чего начнём твой\nпуть к правам?") {
-                        ForEach(levels, id: \.self) { l in
-                            optionRow(title: l, icon: nil, selected: level == l) { level = l }
-                        }
-                    }
+                    case 0: vehicleStep
+                    case 1: regionStep
+                    default: knowledgeStep
                     }
                 }
-                .padding(.horizontal, AppLayout.onboardingMargin).padding(.top, 8)
+                .padding(.bottom, 16)
             }
-
-            PrimaryButton(title: q < 2 ? "Следующий вопрос" : "Завершить", enabled: canProceed) {
-                if q < 2 { q += 1 } else { onDone() }
-            }
-            .padding(.horizontal, AppLayout.onboardingMargin).padding(.bottom, 16)
+            bottomButton
         }
         .background(.white)
     }
 
-    @ViewBuilder private func questionBlock<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
-        Text(title).font(.app(26, .bold)).foregroundStyle(AppColor.textBlack)
-        content()
+    private var appBar: some View {
+        VStack(spacing: 0) {
+            Image("GoB").resizable().scaledToFit().frame(height: 46).padding(.top, 8)
+            HStack(spacing: 12) {
+                Button(action: back) {
+                    Image(systemName: "chevron.left").font(.system(size: 20, weight: .semibold)).foregroundStyle(AppColor.brandBlue)
+                }.buttonStyle(.plain)
+                ProgressView(value: progress)
+                    .tint(AppColor.brandBlue).background(AppColor.brandBlue.opacity(0.2))
+                    .padding(.trailing, 18)
+            }
+            .padding(.leading, 20).padding(.vertical, 8)
+        }
+        .background(.white)
     }
 
-    private var regionQuestion: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Из какого ты региона?").font(.app(26, .bold)).foregroundStyle(AppColor.textBlack)
+    private func title(_ t: String) -> some View {
+        Text(t).font(.system(size: 24, weight: .bold, design: .rounded))
+            .foregroundStyle(AppColor.textBlack).lineSpacing(4)
+    }
+
+    private var vehicleStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            title(L.surveyVehicleQuestion).padding(.bottom, 30)
+            ForEach(L.surveyVehicleOptions, id: \.id) { opt in
+                cardRow(id: opt.id, icon: opt.icon, title: opt.title, subtitle: opt.subtitle)
+            }
+        }
+        .padding(.horizontal, 24).padding(.top, 24)
+    }
+
+    private var regionStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            title(L.surveyRegionQuestion).padding(.horizontal, 24).padding(.top, 24).padding(.bottom, 12)
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass").foregroundStyle(AppColor.greyText)
-                TextField("Поиск", text: $search).font(.app(16))
+                TextField(L.surveyRegionSearchHint, text: $search).font(.system(size: 16, design: .rounded))
             }
-            .padding(.horizontal, 14).frame(height: 48)
-            .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 12))
-            ForEach(regions.filter { search.isEmpty || $0.localizedCaseInsensitiveContains(search) }, id: \.self) { r in
-                optionRow(title: r, icon: nil, selected: region == r) { region = r }
+            .padding(.horizontal, 16).frame(height: 48)
+            .background(Color(hex: "#F5F5F5"), in: RoundedRectangle(cornerRadius: 14))
+            .padding(.horizontal, 24).padding(.bottom, 12)
+            ForEach(L.surveyRegions.filter { search.isEmpty || $0.localizedCaseInsensitiveContains(search) }, id: \.self) { r in
+                plainRow(id: r, title: r)
             }
         }
     }
 
-    private func optionRow(title: String, icon: String?, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                if let icon { Image(icon).resizable().scaledToFit().frame(width: 32, height: 32) }
-                Text(title).font(.app(16, .medium)).foregroundStyle(AppColor.textBlack)
-                Spacer()
-                Image(systemName: selected ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(selected ? AppColor.brandBlue : AppColor.tabInactive)
-            }
-            .padding(.horizontal, 16).frame(height: 60)
-            .background(selected ? AppColor.brandBlue.opacity(0.06) : AppColor.lightBg,
-                        in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14)
-                .stroke(selected ? AppColor.brandBlue : .clear, lineWidth: 1.5))
+    private var knowledgeStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            title(L.surveyKnowledgeQuestion).padding(.horizontal, 24).padding(.top, 24).padding(.bottom, 12)
+            ForEach(L.surveyKnowledgeOptions, id: \.self) { o in plainRow(id: o, title: o) }
         }
-        .buttonStyle(.plain)
+    }
+
+    private func cardRow(id: String, icon: String, title: String, subtitle: String) -> some View {
+        let on = selected == id
+        return Button { answers[q] = id } label: {
+            HStack(spacing: 16) {
+                Image(icon).resizable().scaledToFit().frame(width: 48, height: 48)
+                    .background(AppColor.lightBg, in: Circle())
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(title).font(.system(size: 16, weight: .semibold, design: .rounded)).foregroundStyle(AppColor.textBlack)
+                    Text(subtitle).font(.system(size: 13, design: .rounded)).foregroundStyle(AppColor.greyText)
+                }
+                Spacer()
+                indicator(on: on)
+            }
+            .padding(.horizontal, 20).padding(.vertical, 16)
+            .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(on ? AppColor.brandBlue : .clear, lineWidth: 2))
+            .padding(.bottom, 12)
+        }.buttonStyle(.plain)
+    }
+
+    private func plainRow(id: String, title: String) -> some View {
+        let on = selected == id
+        return VStack(spacing: 0) {
+            Button { answers[q] = id } label: {
+                HStack {
+                    Text(title).font(.system(size: 16, design: .rounded)).foregroundStyle(AppColor.textBlack)
+                    Spacer()
+                    indicator(on: on)
+                }
+                .padding(.init(top: 18, leading: 24, bottom: 24, trailing: 24))
+                .contentShape(Rectangle())
+            }.buttonStyle(.plain)
+            Rectangle().fill(Color(hex: "#E1E1E1")).frame(height: 1).padding(.horizontal, 30)
+        }
+    }
+
+    private func indicator(on: Bool) -> some View {
+        Group {
+            if on { Image("Select").resizable().scaledToFit().frame(width: 22, height: 22).clipShape(Circle()) }
+            else { Circle().stroke(Color(hex: "#DDDDDD"), lineWidth: 1.8).frame(width: 22, height: 22) }
+        }
+    }
+
+    private var bottomButton: some View {
+        Button(action: next) {
+            HStack(spacing: 8) {
+                Text(isLast ? L.surveyFinish : L.surveyNext).font(.system(size: 16, weight: .semibold, design: .rounded))
+                if !isLast { Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)) }
+            }
+            .foregroundStyle(.white).frame(maxWidth: .infinity).frame(height: 70)
+            .background(AppColor.brandBlue.opacity(selected == nil ? 0.5 : 1), in: RoundedRectangle(cornerRadius: 35, style: .continuous))
+        }
+        .buttonStyle(.plain).disabled(selected == nil)
+        .padding(.horizontal, 30).padding(.bottom, 16)
+    }
+
+    private func next() {
+        guard selected != nil else { return }
+        if isLast { onDone() } else { search = ""; withAnimation { q += 1 } }
+    }
+    private func back() {
+        if q == 0 { onBack() } else { search = ""; withAnimation { q -= 1 } }
     }
 }
 
@@ -194,41 +243,34 @@ private struct SocialAuthView: View {
         VStack(spacing: 16) {
             Spacer()
             Image("ai_akzhol").resizable().scaledToFit().frame(maxHeight: 240)
-            Text("Создай аккаунт").font(.app(28, .bold)).foregroundStyle(AppColor.textBlack)
+            Text("Создай аккаунт").font(.system(size: 28, weight: .bold, design: .rounded)).foregroundStyle(AppColor.textBlack)
             Text("Чтобы сохранять прогресс и результаты")
-                .font(.app(15)).foregroundStyle(AppColor.greyText).multilineTextAlignment(.center)
+                .font(.system(size: 15, design: .rounded)).foregroundStyle(AppColor.greyText).multilineTextAlignment(.center)
             Spacer()
             authButton("Продолжить с Apple", icon: "apple.logo", bg: .black, fg: .white) { signIn(.apple) }
             authButton("Продолжить с Google", asset: "google_g_logo", bg: AppColor.lightBg, fg: AppColor.textBlack) { signIn(.google) }
             Button("Продолжить как гость") { signIn(.demo) }
-                .font(.app(15, .medium)).foregroundStyle(AppColor.greyText).padding(.top, 4)
+                .font(.system(size: 15, weight: .medium, design: .rounded)).foregroundStyle(AppColor.greyText).padding(.top, 4)
         }
-        .padding(.horizontal, AppLayout.onboardingMargin).padding(.bottom, 16)
-        .background(.white)
-        .disabled(busy)
+        .padding(.horizontal, 24).padding(.bottom, 16).background(.white).disabled(busy)
     }
 
-    private func authButton(_ title: String, icon: String? = nil, asset: String? = nil,
-                            bg: Color, fg: Color, action: @escaping () -> Void) -> some View {
+    private func authButton(_ title: String, icon: String? = nil, asset: String? = nil, bg: Color, fg: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 10) {
                 if let icon { Image(systemName: icon).font(.system(size: 18)) }
                 if let asset { Image(asset).resizable().scaledToFit().frame(width: 20, height: 20) }
-                Text(title).font(.app(16, .semibold))
+                Text(title).font(.system(size: 16, weight: .semibold, design: .rounded))
             }
-            .foregroundStyle(fg).frame(maxWidth: .infinity).frame(height: 56)
-            .background(bg, in: Capsule())
+            .foregroundStyle(fg).frame(maxWidth: .infinity).frame(height: 56).background(bg, in: Capsule())
         }.buttonStyle(.plain)
     }
 
     private func signIn(_ provider: AuthProvider) {
         busy = true
         Task { @MainActor in
-            if let info = try? await LocalAuthService.shared.signIn(with: provider) {
-                Session.shared.update(user: info)
-            }
-            busy = false
-            onDone()
+            if let info = try? await LocalAuthService.shared.signIn(with: provider) { Session.shared.update(user: info) }
+            busy = false; onDone()
         }
     }
 }
@@ -237,36 +279,37 @@ private struct SocialAuthView: View {
 
 private struct LoadingView: View {
     var onDone: () -> Void
-    @State private var percent = 0
-    private let steps = [(30, "Собираем ваши ответы…"), (75, "Готовим план обучения…"), (99, "Анализируем ваш результат…"), (100, "Готово!")]
-    @State private var stepIdx = 0
+    @State private var percent: Double = 0
+    @State private var text = L.loadingStart
 
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
+        VStack(spacing: 0) {
+            Image("GoB").resizable().scaledToFit().frame(height: 60).padding(.top, 30).padding(.bottom, 50)
+            Spacer().frame(height: 65)
             ZStack {
-                Circle().stroke(AppColor.brandBlue.opacity(0.15), lineWidth: 10).frame(width: 220, height: 220)
-                Circle().trim(from: 0, to: CGFloat(percent) / 100)
-                    .stroke(AppColor.brandBlue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                    .rotationEffect(.degrees(-90)).frame(width: 220, height: 220)
-                    .animation(.easeInOut, value: percent)
-                Text("\(percent)%").font(.system(size: 56, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppColor.brandBlue)
+                Circle().stroke(AppColor.brandBlue.opacity(0.1), lineWidth: 5).frame(width: 240, height: 240)
+                Circle().trim(from: 0, to: percent)
+                    .stroke(AppColor.brandBlue, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .rotationEffect(.degrees(-90)).frame(width: 240, height: 240).animation(.easeInOut(duration: 1.8), value: percent)
+                Text("\(Int(percent * 100))%").font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(AppColor.brandBlue)
             }
-            Text(steps[min(stepIdx, steps.count - 1)].1)
-                .font(.app(16, .semibold)).foregroundStyle(AppColor.textBlack)
+            Spacer().frame(height: 50)
+            Text(text).font(.system(size: 16, weight: .semibold, design: .rounded)).foregroundStyle(AppColor.textBlack)
+                .multilineTextAlignment(.center).animation(.easeInOut, value: text)
             Spacer()
         }
-        .background(.white)
+        .frame(maxWidth: .infinity).background(.white)
         .task { await run() }
     }
 
     private func run() async {
-        for (i, s) in steps.enumerated() {
-            stepIdx = i
-            withAnimation { percent = s.0 }
-            try? await Task.sleep(nanoseconds: 900_000_000)
+        for step in L.loadingSteps {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            withAnimation { percent = step.end; text = step.text }
         }
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        withAnimation { percent = 1.0 }
+        try? await Task.sleep(nanoseconds: 800_000_000)
         onDone()
     }
 }
@@ -275,20 +318,93 @@ private struct LoadingView: View {
 
 private struct SocialProofView: View {
     var onContinue: () -> Void
+
     var body: some View {
-        VStack(spacing: 18) {
-            Spacer()
-            Image("goFire").resizable().scaledToFit().frame(maxHeight: 200)
-            Text("Тебе доверяют тысячи\nбудущих водителей")
-                .font(.app(26, .bold)).foregroundStyle(AppColor.textBlack).multilineTextAlignment(.center)
-            HStack(spacing: 4) {
-                ForEach(0..<5, id: \.self) { _ in Image(systemName: "star.fill").foregroundStyle(AppColor.orange) }
+        VStack(spacing: 0) {
+            Image("GoB").resizable().scaledToFit().frame(height: 34).padding(.vertical, 16)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    hero
+                    statsRow.padding(.top, 20)
+                    VStack(spacing: 12) {
+                        ForEach(Array(L.socialProofFeatures.enumerated()), id: \.offset) { _, f in featureTile(f) }
+                    }.padding(.top, 28)
+                    Text(L.socialProofReviewsTitle)
+                        .font(.system(size: 22, weight: .bold, design: .rounded)).foregroundStyle(AppColor.textBlack)
+                        .padding(.top, 32).padding(.bottom, 16)
+                    VStack(spacing: 14) {
+                        ForEach(Array(L.socialProofReviews.enumerated()), id: \.offset) { _, r in reviewCard(r) }
+                    }
+                }
+                .padding(.horizontal, 20).padding(.bottom, 8)
             }
-            Text("4.8 · более 10 000 установок").font(.app(15)).foregroundStyle(AppColor.greyText)
-            Spacer()
-            PrimaryButton(title: "Продолжить", action: onContinue)
-                .padding(.horizontal, AppLayout.onboardingMargin).padding(.bottom, 16)
+            Button(action: onContinue) {
+                Text(L.socialProofContinue).font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white).frame(maxWidth: .infinity).frame(height: 58)
+                    .background(AppColor.brandBlue, in: RoundedRectangle(cornerRadius: 35, style: .continuous))
+            }
+            .buttonStyle(.plain).padding(.horizontal, 20).padding(.vertical, 12)
         }
         .background(.white)
+    }
+
+    private var hero: some View {
+        (Text(L.socialProofHero1).foregroundColor(AppColor.textBlack)
+         + Text(L.socialProofHero2).foregroundColor(AppColor.brandBlue)
+         + Text(L.socialProofHero3).foregroundColor(AppColor.textBlack))
+            .font(.system(size: 26, weight: .heavy, design: .rounded)).lineSpacing(4)
+    }
+
+    private var statsRow: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(L.socialProofStats.enumerated()), id: \.offset) { i, s in
+                VStack(spacing: 4) {
+                    Text(s.value).font(.system(size: 22, weight: .heavy, design: .rounded)).foregroundStyle(AppColor.brandBlue)
+                    Text(s.label).font(.system(size: 12, design: .rounded)).foregroundStyle(Color(hex: "#B6B6B6"))
+                        .multilineTextAlignment(.center)
+                }.frame(maxWidth: .infinity)
+                if i < L.socialProofStats.count - 1 { Rectangle().fill(Color(hex: "#DDDDDD")).frame(width: 1, height: 36) }
+            }
+        }
+        .padding(.horizontal, 12).padding(.vertical, 16)
+        .background(Color(hex: "#F5F5F5"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private func featureTile(_ f: (icon: String, color: String, title: String, subtitle: String)) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12).fill(Color(hex: f.color).opacity(0.12)).frame(width: 44, height: 44)
+                if f.icon.isEmpty {
+                    Image("ai_akzhol").resizable().scaledToFit().frame(width: 28, height: 28)
+                } else {
+                    Image(systemName: f.icon).font(.system(size: 22)).foregroundStyle(Color(hex: f.color))
+                }
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(f.title).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(AppColor.textBlack).lineSpacing(2)
+                Text(f.subtitle).font(.system(size: 12, design: .rounded)).foregroundStyle(Color(hex: "#B6B6B6")).lineSpacing(2)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func reviewCard(_ r: (name: String, date: String, text: String)) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Text(String(r.name.prefix(1))).font(.system(size: 16, weight: .bold, design: .rounded)).foregroundStyle(.white)
+                    .frame(width: 38, height: 38).background(AppColor.brandBlue, in: Circle())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(r.name).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(AppColor.textBlack)
+                    HStack(spacing: 1) {
+                        ForEach(0..<5, id: \.self) { _ in Image(systemName: "star.fill").font(.system(size: 11)).foregroundStyle(Color(hex: "#FFCC00")) }
+                    }
+                }
+                Spacer()
+                Text(r.date).font(.system(size: 12, design: .rounded)).foregroundStyle(Color(hex: "#B6B6B6"))
+            }
+            Text(r.text).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(Color(hex: "#4D4D4D")).lineSpacing(4)
+        }
+        .padding(16)
+        .background(Color(hex: "#F5F5F5"), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
