@@ -2,11 +2,12 @@
 //  ChatView.swift
 //  pdd
 //
-//  Shared chat experience used by the Акжол tab and the in-quiz AI sheet.
+//  Shared chat experience (Акжол tab + in-quiz AI sheet) — matches Flutter.
 //
 
 import SwiftUI
 import Observation
+internal import Combine
 
 @Observable
 final class ChatViewModel {
@@ -14,34 +15,20 @@ final class ChatViewModel {
     var input = ""
     var pendingImages: [Data] = []
     private(set) var isSending = false
-    /// Pending quiz-error context attached to the next user message.
     var pendingContext: String?
-    /// Invoked when the free Akzhol turn limit is hit.
     var onLimitReached: (() -> Void)?
 
     var canSend: Bool {
         !isSending && (!input.trimmingCharacters(in: .whitespaces).isEmpty || !pendingImages.isEmpty)
     }
 
-    func seedGreeting() {
-        guard messages.isEmpty else { return }
-    }
-
     func send() {
         let text = input.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty || !pendingImages.isEmpty else { return }
+        if !UsageLimits.shared.canUseAkzhol { onLimitReached?(); return }
 
-        if !UsageLimits.shared.canUseAkzhol {
-            onLimitReached?()
-            return
-        }
-
-        let user = ChatMessage(text: text, isUser: true, imageDatas: pendingImages,
-                               quizContextForApi: pendingContext)
-        messages.append(user)
-        input = ""
-        pendingImages = []
-        pendingContext = nil
+        messages.append(ChatMessage(text: text, isUser: true, imageDatas: pendingImages, quizContextForApi: pendingContext))
+        input = ""; pendingImages = []; pendingContext = nil
 
         let typing = ChatMessage(text: "", isUser: false, isTyping: true)
         messages.append(typing)
@@ -62,62 +49,80 @@ final class ChatViewModel {
     }
 }
 
+/// Chat input pill with in-bar camera (purple) + send (blue) — matches chat_input.dart.
+struct ChatInputBar: View {
+    @Bindable var vm: ChatViewModel
+    var showCamera: Bool = true
+    var onCamera: () -> Void = {}
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(spacing: 10) {
+            if !vm.pendingImages.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Array(vm.pendingImages.enumerated()), id: \.offset) { idx, data in
+                            if let ui = UIImage(data: data) {
+                                Image(uiImage: ui).resizable().scaledToFill()
+                                    .frame(width: 72, height: 72)
+                                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                                    .overlay(alignment: .topTrailing) {
+                                        Button { vm.pendingImages.remove(at: idx) } label: {
+                                            Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                                                .foregroundStyle(.white).frame(width: 18, height: 18)
+                                                .background(.black.opacity(0.54), in: Circle())
+                                        }.padding(4)
+                                    }
+                            }
+                        }
+                    }
+                }
+                .frame(height: 72)
+            }
+            HStack(spacing: 8) {
+                TextField(L.chatInputHint, text: $vm.input)
+                    .font(.system(size: 16, design: .rounded)).appKerning(16)
+                    .foregroundStyle(AppColor.textBlack)
+                    .focused($focused).submitLabel(.send).onSubmit(vm.send)
+                if showCamera {
+                    Button(action: onCamera) {
+                        Image(systemName: "camera.fill").font(.system(size: 20)).foregroundStyle(.white)
+                            .frame(width: 42, height: 42).background(Color(hex: "#7B61FF"), in: Circle())
+                    }.buttonStyle(.plain)
+                }
+                Button(action: vm.send) {
+                    Image(systemName: "paperplane.fill").font(.system(size: 17)).foregroundStyle(.white)
+                        .frame(width: 42, height: 42)
+                        .background(Color(hex: "#3B82F6"), in: RoundedRectangle(cornerRadius: 30))
+                }.buttonStyle(.plain)
+            }
+            .padding(.leading, 16).padding(.trailing, showCamera ? 10 : 16)
+            .frame(height: 72)
+            .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 40, style: .continuous))
+        }
+        .padding(.horizontal, 20)
+    }
+}
+
 struct ChatView: View {
     @Bindable var vm: ChatViewModel
     var showsCamera: Bool = true
-    @FocusState private var focused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 0) {
                         ForEach(vm.messages) { MessageBubble(message: $0) }
                         Color.clear.frame(height: 1).id("bottom")
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
+                    .padding(.horizontal, 30).padding(.top, 8)
                 }
-                .onChange(of: vm.messages.count) { _, _ in
-                    withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
-                }
+                .onChange(of: vm.messages.count) { _, _ in withAnimation { proxy.scrollTo("bottom", anchor: .bottom) } }
             }
-            inputBar
+            ChatInputBar(vm: vm, showCamera: showsCamera).padding(.bottom, 12)
         }
         .background(.white)
-    }
-
-    private var inputBar: some View {
-        VStack(spacing: 8) {
-            if !vm.pendingImages.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(Array(vm.pendingImages.enumerated()), id: \.offset) { _, data in
-                            if let ui = UIImage(data: data) {
-                                Image(uiImage: ui).resizable().scaledToFill()
-                                    .frame(width: 56, height: 56)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
-            }
-            HStack(spacing: 12) {
-                TextField("Напишите свой вопрос", text: $vm.input)
-                    .font(.app(16))
-                    .foregroundStyle(AppColor.textBlack)
-                    .focused($focused)
-                    .submitLabel(.send)
-                    .onSubmit(vm.send)
-                CircleIconButton(systemName: "paperplane.fill", enabled: vm.canSend, action: vm.send)
-            }
-            .padding(.leading, 18).padding(.trailing, 9)
-            .frame(height: 64)
-            .background(AppColor.lightBg, in: Capsule())
-            .padding(.horizontal, 20)
-            .padding(.bottom, 8)
-        }
     }
 }
 
@@ -133,30 +138,44 @@ struct MessageBubble: View {
                         ForEach(Array(message.imageDatas.enumerated()), id: \.offset) { _, data in
                             if let ui = UIImage(data: data) {
                                 Image(uiImage: ui).resizable().scaledToFill()
-                                    .frame(width: 92, height: 70)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                             }
                         }
                     }
                 }
                 if message.isTyping {
-                    HStack(spacing: 10) {
-                        Text("Думает что ответить...").font(.app(16)).foregroundStyle(AppColor.greyText)
-                        TypingDots()
-                    }
-                    .padding(.horizontal, 18).padding(.vertical, 14)
-                    .background(AppColor.lightBg, in: bubble)
+                    TypingDotsBlack()
+                        .padding(.horizontal, 14).padding(.vertical, 12)
+                        .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 } else if !message.text.isEmpty {
-                    Text(message.text)
-                        .font(.app(16))
-                        .foregroundStyle(message.isUser ? .white : AppColor.textBlack)
-                        .lineSpacing(3)
-                        .padding(.horizontal, 18).padding(.vertical, 14)
-                        .background(message.isUser ? AppColor.brandBlue : AppColor.lightBg, in: bubble)
+                    if message.isUser {
+                        Text(message.text).font(.system(size: 16, design: .rounded))
+                            .foregroundStyle(.white).padding(14)
+                            .background(AppColor.brandBlue, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .frame(maxWidth: 280, alignment: .trailing)
+                    } else {
+                        MarkdownText(message.text).padding(14)
+                            .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .frame(maxWidth: 300, alignment: .leading)
+                    }
                 }
             }
+            .padding(.vertical, 6)
             if !message.isUser { Spacer(minLength: 40) }
         }
     }
-    private var bubble: some Shape { RoundedRectangle(cornerRadius: 20, style: .continuous) }
+}
+
+struct TypingDotsBlack: View {
+    @State private var phase = 0
+    private let timer = Timer.publish(every: 0.3, on: .main, in: .common).autoconnect()
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<3, id: \.self) { i in
+                Circle().fill(.black.opacity(i <= phase ? 1 : 0.25)).frame(width: 8, height: 8)
+            }
+        }
+        .onReceive(timer) { _ in phase = (phase + 1) % 3 }
+    }
 }

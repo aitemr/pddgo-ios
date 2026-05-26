@@ -115,6 +115,20 @@ final class QuizViewModel {
         restoreCurrentState()
     }
 
+    var canGoBack: Bool { currentIndex > 0 }
+
+    func goToQuestion(_ i: Int) {
+        guard i >= 0, i < total else { return }
+        currentIndex = i
+        restoreCurrentState()
+    }
+
+    enum QState { case correct, wrong, unanswered }
+    func questionState(_ i: Int) -> QState {
+        guard submittedPerQuestion[i], let c = recordedUserChoices[i] else { return .unanswered }
+        return c == questions[i].correctIndex ? .correct : .wrong
+    }
+
     private func restoreCurrentState() {
         selectedOptionIndex = recordedUserChoices[currentIndex]
         isAnswerSubmitted = submittedPerQuestion[currentIndex]

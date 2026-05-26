@@ -2,159 +2,269 @@
 //  TestsRootView.swift
 //  pdd
 //
-//  Tests tab: trial exam, work-on-mistakes, and history (8 preview / all).
+//  Tests tab — faithful port of testPage.dart (TestMainPage).
 //
 
 import SwiftUI
 
-enum TrialKind: Hashable { case standard, individual
-    var config: QuizConfig { self == .standard ? .trialStandard() : .trialIndividual() }
+enum TrialKind: Hashable {
+    case standard, individual
+    var moduleId: String { self == .standard ? TrialExam.standard : TrialExam.individual }
 }
-enum TestsRoute: Hashable { case intro(TrialKind), history }
+
+enum TestsRoute: Hashable {
+    case detail(TrialKind)
+    case historyAll
+    case roadSign
+}
 
 struct TestsRootView: View {
+    var onSwitchTab: (PDDTab) -> Void = { _ in }
+
     @State private var path = NavigationPath()
     @State private var launch: QuizConfig?
-    @State private var mistakes = MistakesBank.shared
     @State private var history = TestHistory.shared
 
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Тесты").font(.app(28, .bold)).foregroundStyle(AppColor.textBlack)
-                        .padding(.horizontal, AppLayout.homeMargin).padding(.top, 8)
-
-                    trialCard(
-                        icon: { Image("KZ").resizable().scaledToFit().padding(12) },
-                        title: "Пробное тестирование",
-                        subtitle: "40 вопросов · порог сдачи 32",
-                        action: { path.append(TestsRoute.intro(.standard)) }
-                    )
-
-                    trialCard(
-                        icon: { Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 24)).foregroundStyle(.white) },
-                        title: "Работа над ошибками",
-                        subtitle: mistakes.isEmpty ? "Банк ошибок пуст" : "\(mistakes.count) вопросов в банке ошибок",
-                        enabled: !mistakes.isEmpty,
-                        action: { path.append(TestsRoute.intro(.individual)) }
-                    )
-
-                    historySection
+                VStack(spacing: 0) {
+                    header
+                    roadSignPromo.padding(.init(top: 24, leading: 16, bottom: 0, trailing: 16))
+                    Spacer().frame(height: 24)
+                    individualCard
+                    historySection.padding(.init(top: 32, leading: 30, bottom: 0, trailing: 30))
                 }
-                .padding(.bottom, 24)
+                .padding(.bottom, 60)
             }
             .background(.white)
+            .ignoresSafeArea(edges: .top)
             .navigationDestination(for: TestsRoute.self) { route in
                 switch route {
-                case .intro(let kind):
-                    TrialIntroView(kind: kind) { launch = kind.config }
-                case .history:
-                    HistoryListView { launch = .replay($0) }
+                case .detail(let kind): TestDetailView(kind: kind) { startQuiz(kind) }
+                case .historyAll: TestHistoryFullView { launch = .replay($0) }
+                case .roadSign: RoadSignChatView()
                 }
             }
             .quizFlow(item: $launch)
         }
+        #if DEBUG
+        .onAppear {
+            if UserDefaults.standard.bool(forKey: "debug_autoquiz") && launch == nil {
+                launch = .trialStandard()
+            }
+        }
+        #endif
     }
 
-    // MARK: Cards
+    private func startQuiz(_ kind: TrialKind) {
+        if kind == .individual && MistakesBank.shared.isEmpty { return }
+        launch = kind == .standard ? .trialStandard() : .trialIndividual()
+    }
 
-    private func trialCard<Icon: View>(@ViewBuilder icon: () -> Icon, title: String,
-                                       subtitle: String, enabled: Bool = true,
-                                       action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                ZStack { Circle().fill(AppColor.brandBlue2).frame(width: 56, height: 56); icon().frame(width: 56, height: 56) }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.app(16, .semibold)).foregroundStyle(AppColor.textBlack)
-                    Text(subtitle).font(.app(13)).foregroundStyle(AppColor.greyText)
+    // MARK: Blue header
+
+    private var header: some View {
+        VStack(spacing: 0) {
+            Image("GoW").resizable().scaledToFit().frame(width: 70, height: 70)
+                .padding(.top, 12)
+            Image("KZ").resizable().scaledToFit().frame(width: 80, height: 80).padding(.top, 22)
+            Text(L.testMainTitle)
+                .font(.system(size: 36, weight: .bold, design: .rounded))
+                .appKerning(36)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .lineSpacing(2)
+                .padding(.top, 16)
+            Button { path.append(TestsRoute.detail(.standard)) } label: {
+                HStack(spacing: 8) {
+                    Text(L.testStartTrialBtn)
+                        .font(.system(size: 16, weight: .bold, design: .rounded)).appKerning(16)
+                        .multilineTextAlignment(.center)
+                    Image(systemName: "chevron.right").font(.system(size: 14, weight: .bold))
                 }
-                Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(AppColor.tabInactive)
+                .foregroundStyle(AppColor.brandBlue)
+                .frame(maxWidth: .infinity).frame(height: 70)
+                .background(.white, in: Capsule())
+                .shadow(color: .black.opacity(0.1), radius: 10, y: 4)
             }
-            .padding(18)
-            .background(.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(AppColor.cardBorder, lineWidth: 1))
-            .opacity(enabled ? 1 : 0.5)
+            .buttonStyle(.plain)
+            .padding(.horizontal, 46).padding(.top, 24)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, safeTop + 12)
+        .padding(.bottom, 30)
+        .background(
+            ZStack {
+                AppColor.brandBlue
+                Image("flagBack").resizable().scaledToFill()
+            }
+        )
+        .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 40, bottomTrailingRadius: 40))
+    }
+
+    private var safeTop: CGFloat {
+        (UIApplication.shared.connectedScenes.first as? UIWindowScene)?
+            .windows.first?.safeAreaInsets.top ?? 47
+    }
+
+    // MARK: Road-sign promo
+
+    private var roadSignPromo: some View {
+        Button { path.append(TestsRoute.roadSign) } label: {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(L.roadsignDetector)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white).lineSpacing(2)
+                    HStack(spacing: 4) {
+                        Text(L.go).font(.system(size: 14, weight: .medium, design: .rounded))
+                            .underline().foregroundStyle(.white.opacity(0.7))
+                        Image(systemName: "arrow.right").font(.system(size: 14)).foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+                Spacer(minLength: 0)
+                Image("containerLogo").resizable().scaledToFit().frame(width: 130, height: 110)
+            }
+            .padding(.init(top: 20, leading: 20, bottom: 20, trailing: 0))
+            .background(AppColor.brandBlue, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(!enabled)
-        .padding(.horizontal, AppLayout.homeMargin)
     }
 
-    @ViewBuilder private var historySection: some View {
-        if !history.entries.isEmpty {
-            HStack {
-                Text("История тестов").font(.app(20, .semibold)).foregroundStyle(AppColor.textBlack)
+    // MARK: Individual / work-on-mistakes card
+
+    private var individualCard: some View {
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading, spacing: 0) {
+                Image("info").resizable().scaledToFit().frame(height: 35).frame(maxWidth: 35, alignment: .leading)
+                Text(L.workOnMistakesShort)
+                    .font(.system(size: 26, weight: .bold, design: .rounded)).appKerning(26)
+                    .foregroundStyle(AppColor.textBlack).padding(.top, 24)
+                Text(L.individualTestingAiDesc)
+                    .font(.system(size: 14, design: .rounded)).appKerning(14)
+                    .foregroundStyle(AppColor.textBlack).lineSpacing(3).padding(.top, 12)
+                blueButton(L.startTestingBtn, height: 70) { path.append(TestsRoute.detail(.individual)) }
+                    .padding(.top, 24)
+            }
+            .padding(.init(top: 24, leading: 20, bottom: 24, trailing: 20))
+            .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .padding(.horizontal, 30)
+
+            Text(L.recommended)
+                .font(.system(size: 12, weight: .heavy, design: .rounded)).appKerning(12)
+                .foregroundStyle(.white)
+                .frame(width: 133, height: 28)
+                .background(AppColor.brandBlue, in: RoundedRectangle(cornerRadius: 14))
+                .shadow(color: AppColor.brandBlue.opacity(0.3), radius: 8, y: 4)
+                .padding(.trailing, 80).offset(y: -10)
+        }
+    }
+
+    // MARK: History
+
+    private var historySection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                Text(L.testHistoryTitle)
+                    .font(.system(size: 18, weight: .heavy, design: .rounded)).appKerning(18)
+                    .foregroundStyle(AppColor.textBlack)
                 Spacer()
                 if history.entries.count > QuizRules.historyPreviewCount {
-                    Button("Показать все") { path.append(TestsRoute.history) }
-                        .font(.app(14, .medium)).foregroundStyle(AppColor.brandBlue)
+                    Button(L.testHistoryShowAll) { path.append(TestsRoute.historyAll) }
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColor.brandBlue)
                 }
             }
-            .padding(.horizontal, AppLayout.homeMargin).padding(.top, 8)
+            Text(L.testHistorySubtitle)
+                .font(.system(size: 14, design: .rounded)).appKerning(14)
+                .foregroundStyle(AppColor.greyText).lineSpacing(2).padding(.top, 4)
 
-            VStack(spacing: 10) {
-                ForEach(history.preview) { entry in
-                    HistoryRow(entry: entry) { launch = .replay(entry) }
+            if history.entries.isEmpty {
+                Text(L.testHistoryEmpty)
+                    .font(.system(size: 14, design: .rounded)).appKerning(14)
+                    .foregroundStyle(AppColor.greyText).lineSpacing(2)
+                    .padding(.top, 16)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(history.preview) { e in
+                        TestHistoryRow(entry: e) { launch = .replay(e) }
+                    }
                 }
+                .padding(.top, 16)
             }
-            .padding(.horizontal, AppLayout.homeMargin)
         }
     }
 }
 
-struct HistoryRow: View {
+// MARK: - Shared blue pill button
+
+func blueButton(_ title: String, height: CGFloat = 60, action: @escaping () -> Void) -> some View {
+    Button { Haptics.impact(); action() } label: {
+        HStack(spacing: 8) {
+            Text(title).font(.system(size: 16, weight: .bold, design: .rounded)).appKerning(16)
+            Image(systemName: "chevron.right").font(.system(size: 15, weight: .semibold))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity).frame(height: height)
+        .background(AppColor.brandBlue, in: Capsule())
+    }
+    .buttonStyle(.plain)
+}
+
+// MARK: - History row
+
+struct TestHistoryRow: View {
     let entry: TestHistoryEntry
-    var onReplay: () -> Void
+    var onTap: () -> Void
+
+    private var isKz: Bool { entry.quizModuleId == TrialExam.standard }
 
     var body: some View {
-        Button(action: onReplay) {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle().fill((entry.passed ? AppColor.greenSuccess : AppColor.redError).opacity(0.12))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: entry.passed ? "checkmark" : "xmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(entry.passed ? AppColor.greenSuccess : AppColor.redError)
-                }
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                Image(isKz ? "flag" : "Library").resizable().scaledToFill()
+                    .frame(width: 40, height: 40).clipShape(Circle())
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(entry.quizModuleId == TrialExam.individual ? "Индивидуальное тестирование" : "Пробное тестирование")
-                        .font(.app(15, .medium)).foregroundStyle(AppColor.textBlack)
-                    Text(entry.completedDate.formatted(date: .abbreviated, time: .shortened))
-                        .font(.app(12)).foregroundStyle(AppColor.greyText)
+                    Text(isKz ? L.trialTestingShort : L.workOnMistakesShort)
+                        .font(.system(size: 14, weight: .bold, design: .rounded)).appKerning(14)
+                        .foregroundStyle(AppColor.textBlack)
+                    Text(L.testHistoryRowSubtitle(entry.score, entry.total, formatDate(entry.completedDate)))
+                        .font(.system(size: 12, design: .rounded)).appKerning(12)
+                        .foregroundStyle(AppColor.greyText)
                 }
                 Spacer()
-                Text("\(entry.score)/\(entry.total)")
-                    .font(.app(16, .bold))
-                    .foregroundStyle(entry.passed ? AppColor.brandBlue : AppColor.redError)
+                Image(systemName: entry.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(entry.passed ? Color(hex: "#34C759") : Color(hex: "#E53935"))
             }
-            .padding(14)
+            .padding(.horizontal, 16).frame(height: 68)
             .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!entry.canReplay)
     }
+
+    private func formatDate(_ d: Date) -> String {
+        let f = DateFormatter(); f.dateFormat = "dd.MM.yyyy"; return f.string(from: d)
+    }
 }
 
-struct HistoryListView: View {
+struct TestHistoryFullView: View {
     var onReplay: (TestHistoryEntry) -> Void
     @State private var history = TestHistory.shared
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 10) {
-                ForEach(history.entries) { entry in
-                    HistoryRow(entry: entry) { onReplay(entry) }
+                ForEach(history.entries) { e in
+                    TestHistoryRow(entry: e) { onReplay(e) }
                 }
             }
-            .padding(.horizontal, AppLayout.homeMargin)
-            .padding(.vertical, 12)
+            .padding(.init(top: 20, leading: 30, bottom: 60, trailing: 30))
         }
         .background(.white)
-        .navigationTitle("История тестов")
+        .navigationTitle(L.testHistoryFullTitle)
         .navigationBarTitleDisplayMode(.inline)
     }
 }

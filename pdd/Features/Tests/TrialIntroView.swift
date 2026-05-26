@@ -2,67 +2,100 @@
 //  TrialIntroView.swift
 //  pdd
 //
-//  Trial-exam intro (Figma "Индивидуальное тестирование").
+//  TestDetailPage — faithful port (flag, title, description, info rows, button).
 //
 
 import SwiftUI
 
-struct TrialIntroView: View {
+struct TestDetailView: View {
     let kind: TrialKind
     var onStart: () -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var mistakes = MistakesBank.shared
 
-    private var isIndividual: Bool { kind == .individual }
+    private var isMistakes: Bool { kind == .individual }
+    private var title: String { isMistakes ? L.workOnMistakes : L.testPageTitle }
+    private var description: String { isMistakes ? L.testDescriptionIndividual : L.testDescriptionMain }
+    private var count: Int { isMistakes ? min(mistakes.count, 40) : 40 }
+    private var pass: Int { isMistakes ? count : QuizRules.trialPassThreshold }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ZStack {
-                Text(isIndividual ? "Индивидуальное" : "Пробное тестирование")
-                    .font(.app(18, .medium)).foregroundStyle(AppColor.textBlack)
-                HStack { BackButton { dismiss() }; Spacer() }
-            }
-            .padding(.horizontal, AppLayout.homeMargin).padding(.top, 8).padding(.bottom, 16)
-
+        VStack(spacing: 0) {
+            AppTopBar(title: L.testDetailAppBarTitle) { dismiss() }
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
-                    ZStack {
-                        Circle().fill(AppColor.brandBlue2).frame(width: 56, height: 56)
-                        Image("KZ").resizable().scaledToFit().frame(width: 56, height: 56).padding(12)
+                VStack(alignment: .leading, spacing: 0) {
+                    Image("flag").resizable().scaledToFill()
+                        .frame(width: 80, height: 80).clipShape(Circle())
+                        .padding(.top, 30)
+                    Text(title)
+                        .font(.system(size: 28, weight: .heavy, design: .rounded)).appKerning(28)
+                        .foregroundStyle(AppColor.textBlack).lineSpacing(1).padding(.top, 24)
+                    Text(description)
+                        .font(.system(size: 17, design: .rounded)).appKerning(17)
+                        .foregroundStyle(AppColor.textBlack).lineSpacing(5).padding(.top, 16)
+
+                    VStack(spacing: 6) {
+                        infoRow(L.questionsCountLabel, "\(count)")
+                        infoRow(L.passRequirementLabel, "\(pass)")
                     }
+                    .padding(.top, 28)
 
-                    Text(isIndividual ? "Индивидуальное\nтестирование" : "Пробное\nтестирование")
-                        .font(.app(28, .bold)).foregroundStyle(AppColor.textBlack)
-
-                    Text(isIndividual
-                         ? "Хочешь сдать ПДД без второго шанса?\nНачни с умной подготовки. Этот тест адаптирован под тебя: он не тратит время на то, что ты уже знаешь, и бьёт точно по ошибкам."
-                         : "Проверь свою готовность к экзамену. 40 вопросов как на реальной сдаче — с таймером и проходным баллом.")
-                        .font(.app(16)).foregroundStyle(AppColor.greyText).lineSpacing(3)
-
-                    VStack(spacing: 12) {
-                        infoRow("Количество вопросов:", "\(QuizRules.trialQuestionCount)")
-                        infoRow("Для успешной сдачи необходимо:", "\(QuizRules.trialPassThreshold)")
+                    blueButton(L.startTestingBtn, height: 67) {
+                        if isMistakes && mistakes.isEmpty { return }
+                        onStart(); dismiss()
                     }
-                    .padding(.top, 12)
+                    .padding(.top, 30)
+                    .padding(.bottom, 42)
                 }
-                .padding(.horizontal, AppLayout.homeMargin)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 30)
             }
-
-            PrimaryButton(title: "Начать тестирование") { onStart() }
-                .padding(.horizontal, AppLayout.homeMargin)
-                .padding(.bottom, 12)
         }
         .background(.white)
         .navigationBarBackButtonHidden(true)
     }
 
     private func infoRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).font(.app(16)).foregroundStyle(AppColor.textBlack)
+        HStack(spacing: 12) {
+            Text(label)
+                .font(.system(size: 16, weight: .bold, design: .rounded)).appKerning(16)
+                .foregroundStyle(AppColor.textBlack)
             Spacer()
-            Text(value).font(.app(18, .bold)).foregroundStyle(AppColor.brandBlue)
+            Text(value)
+                .font(.system(size: 28, weight: .bold, design: .rounded)).appKerning(28)
+                .foregroundStyle(AppColor.brandBlue)
         }
-        .padding(.horizontal, 20).frame(height: 64)
-        .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.horizontal, 22).padding(.vertical, 14)
+        .frame(minHeight: 67)
+        .background(Color(hex: "#F2F4F7"), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+/// Reusable centered top bar with back chevron + bottom divider (Flutter AppBar).
+struct AppTopBar: View {
+    var title: String
+    var trailing: AnyView? = nil
+    var onBack: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                Text(title)
+                    .font(.system(size: 18, weight: .semibold, design: .rounded)).appKerning(18)
+                    .foregroundStyle(AppColor.textBlack)
+                HStack {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(AppColor.brandBlue)
+                    }.buttonStyle(.plain)
+                    Spacer()
+                    if let trailing { trailing }
+                }
+                .padding(.horizontal, 16)
+            }
+            .frame(height: 50)
+            Divider().overlay(AppColor.cardBorder)
+        }
+        .background(.white)
     }
 }

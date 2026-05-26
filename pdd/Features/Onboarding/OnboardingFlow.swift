@@ -35,51 +35,53 @@ struct OnboardingFlow: View {
 private struct CarouselView: View {
     var onDone: () -> Void
     @State private var page = 0
-    private let slides: [(image: String, title: String, subtitle: String)] = [
-        ("driving_student", "Начни свой путь\nк водительскому удостоверению!", "Проходи видео-курс и выполняй задания"),
-        ("materialsRoad", "Проверь свои знания —\nпроходи пробные тесты\nпрямо в приложении", "Реальные экзаменационные вопросы"),
-        ("ai_akzhol", "ГАИшник Асылхан — твой\nличный помощник по ПДД", "Отвечает на вопросы и помогает готовиться к экзамену"),
-        ("exampleVideo", "Понятные объяснения\nс наглядными анимациями\nи примерами", "Учись легко и эффективно"),
-    ]
+    private let slides = L.onboardingSlides
 
     var body: some View {
         ZStack {
             AppColor.brandBlue.ignoresSafeArea()
             VStack(spacing: 0) {
-                Text("GO").font(.system(size: 44, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(hex: "#FFE000")).padding(.top, 20)
+                Image("go_icon").resizable().scaledToFit().frame(height: 70).padding(.top, 20)
                 TabView(selection: $page) {
                     ForEach(Array(slides.enumerated()), id: \.offset) { i, slide in
-                        VStack(spacing: 24) {
-                            Image(slide.image).resizable().scaledToFit()
-                                .frame(maxHeight: 320)
-                                .padding(24)
-                                .background(.white, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-                                .padding(.horizontal, AppLayout.onboardingMargin)
-                            VStack(spacing: 10) {
-                                Text(slide.title).font(.app(26, .bold)).foregroundStyle(.white)
-                                    .multilineTextAlignment(.center)
-                                Text(slide.subtitle).font(.app(15)).foregroundStyle(.white.opacity(0.9))
-                                    .multilineTextAlignment(.center)
-                            }
-                            .padding(.horizontal, AppLayout.onboardingMargin)
+                        VStack(spacing: 0) {
+                            Spacer()
+                            Image(slide.img).resizable().scaledToFit().frame(height: 290)
+                            Text(slide.title)
+                                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.white).multilineTextAlignment(.center).lineSpacing(1)
+                                .padding(.top, 40)
+                            Text(slide.subtitle)
+                                .font(.system(size: 16, design: .rounded))
+                                .foregroundStyle(.white).multilineTextAlignment(.center)
+                                .padding(.top, 16)
+                            Spacer()
                         }
+                        .padding(24)
                         .tag(i)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
+                .tabViewStyle(.page(indexDisplayMode: .never))
+
+                HStack(spacing: 8) {
+                    ForEach(0..<slides.count, id: \.self) { i in
+                        Capsule().fill(.white.opacity(page == i ? 1 : 0.3)).frame(width: 6, height: 6)
+                    }
+                }
+                .padding(.bottom, 22)
 
                 Button {
-                    if page < slides.count - 1 { page += 1 } else { onDone() }
+                    if page < slides.count - 1 { withAnimation { page += 1 } } else { onDone() }
                 } label: {
-                    Text(page < slides.count - 1 ? "Далее" : "Начать")
-                        .font(.app(18, .bold)).foregroundStyle(AppColor.brandBlue)
-                        .frame(maxWidth: .infinity).frame(height: 64)
+                    Text(page < slides.count - 1 ? L.onboardingNext : L.onboardingStart)
+                        .font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(AppColor.brandBlue)
+                        .frame(maxWidth: .infinity).frame(height: 76)
                         .background(.white, in: Capsule())
                 }
                 .buttonStyle(.plain)
-                .padding(.horizontal, AppLayout.onboardingMargin).padding(.bottom, 16)
+                .padding(.horizontal, 30).padding(.bottom, 16)
             }
+            .padding(.top, 1)
         }
     }
 }

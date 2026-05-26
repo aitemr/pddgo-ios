@@ -44,6 +44,11 @@ extension Font {
     }
 }
 
+extension View {
+    /// Matches the Flutter app's letter-spacing of −3 % of the font size.
+    func appKerning(_ size: CGFloat) -> some View { tracking(-0.03 * size) }
+}
+
 enum AppLayout {
     static let homeMargin: CGFloat = 30
     static let onboardingMargin: CGFloat = 24

@@ -24,6 +24,9 @@ final class AppState {
         if UserDefaults.standard.bool(forKey: "debug_start_main") {
             route = .main
             selectedTab = PDDTab(rawValue: UserDefaults.standard.integer(forKey: "debug_tab")) ?? .tests
+            #if DEBUG
+            SubscriptionGate.shared.debugSetPremium(UserDefaults.standard.bool(forKey: "debug_premium"))
+            #endif
         }
     }
     #endif

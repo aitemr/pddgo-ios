@@ -2,60 +2,53 @@
 //  StreakView.swift
 //  pdd
 //
-//  Post-success streak screen (Figma).
+//  Completion screen (results_screen.dart _buildCompletion) — goFire + streak.
 //
 
 import SwiftUI
 
-struct StreakView: View {
+struct CompletionView: View {
     var onContinue: () -> Void
 
     private let days = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВСК"]
-    private let fireDays: Set<Int> = [2, 3]
+    private let fireOn = [false, false, true, true, false, false, false]
 
     var body: some View {
         VStack(spacing: 0) {
+            Spacer().frame(height: 40)
+            Image("goFire").resizable().scaledToFit().frame(height: 240)
+            Text(L.completionTitle)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .multilineTextAlignment(.center).foregroundStyle(AppColor.textBlack).padding(.top, 40)
+            Text(L.completionSubtitle)
+                .font(.system(size: 15, design: .rounded))
+                .foregroundStyle(.black.opacity(0.54)).multilineTextAlignment(.center).padding(.top, 12)
+            streakRow.padding(.horizontal, 16).padding(.top, 48)
             Spacer()
-            ZStack {
-                Text("GO")
-                    .font(.system(size: 96, weight: .heavy, design: .rounded))
-                    .foregroundStyle(AppColor.brandBlue)
-                Text("🔥").font(.system(size: 86)).offset(y: 6)
-            }
-            Text("Вы уже на шаг ближе\nк своим правам!")
-                .font(.app(24, .bold))
-                .foregroundStyle(AppColor.textBlack)
-                .multilineTextAlignment(.center)
-                .padding(.top, 24)
-            Text("Продолжайте обучение и будьте готовы\nк успешной сдаче экзамена")
-                .font(.app(16))
-                .foregroundStyle(AppColor.greyText)
-                .multilineTextAlignment(.center)
-                .padding(.top, 12)
-
-            weekRow.padding(.top, 28).padding(.horizontal, AppLayout.homeMargin)
-
-            Spacer()
-            PrimaryButton(title: "Продолжить", action: onContinue)
-                .padding(.horizontal, AppLayout.homeMargin)
-                .padding(.bottom, 12)
+            blueButton(L.continueBtn, height: 72, action: onContinue)
+                .padding(20)
         }
         .background(.white)
     }
 
-    private var weekRow: some View {
+    private var streakRow: some View {
         HStack(spacing: 0) {
             ForEach(Array(days.enumerated()), id: \.offset) { i, day in
-                Text(fireDays.contains(i) ? "🔥" : day)
-                    .font(.app(14, .medium))
-                    .foregroundStyle(AppColor.textBlack)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                if i < days.count - 1 {
-                    Rectangle().fill(AppColor.divider).frame(width: 1, height: 30)
+                VStack(spacing: 8) {
+                    Text(day).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.black.opacity(0.87))
+                    if fireOn[i] {
+                        Image("iconFire").renderingMode(.template).resizable().scaledToFit()
+                            .frame(width: 24, height: 24).foregroundStyle(.orange)
+                    } else {
+                        Color.clear.frame(height: 24)
+                    }
+                }
+                .frame(maxWidth: .infinity).padding(.vertical, 12)
+                .overlay(alignment: .trailing) {
+                    if i < days.count - 1 { Rectangle().fill(.black.opacity(0.12)).frame(width: 0.5) }
                 }
             }
         }
-        .background(AppColor.lightBg, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color(hex: "#F2F4F7"), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }

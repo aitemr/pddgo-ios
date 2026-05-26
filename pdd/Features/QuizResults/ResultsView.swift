@@ -2,7 +2,7 @@
 //  ResultsView.swift
 //  pdd
 //
-//  Success / failure result screen (Figma + spec §6).
+//  Faithful port of results_screen.dart (_buildResultView).
 //
 
 import SwiftUI
@@ -15,106 +15,115 @@ struct ResultsView: View {
     @State private var mistakesChat: ChatViewModel?
     @State private var showPaywall = false
 
-    private var isFailure: Bool { result.type == .failure }
+    private var isSuccess: Bool { result.type == .success }
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                BackButton(action: onClose)
-                Spacer()
-            }
-            .padding(.horizontal, AppLayout.homeMargin)
-            .padding(.top, 8)
-
-            VStack(spacing: 14) {
-                sign
-                scoreText
-                Text(subtitle)
-                    .font(.app(16))
-                    .foregroundStyle(AppColor.greyText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                if let elapsed = result.elapsedSeconds, let limit = result.timeLimit, result.type == .success {
-                    Text("\(formatMMSS(elapsed)) / \(formatMMSS(limit))")
-                        .font(.app(14, .medium)).foregroundStyle(AppColor.greyText)
-                }
-            }
-            .padding(.top, 8)
-
-            ZStack(alignment: .bottom) {
-                Image(isFailure ? "quizFail" : "quizdoneCar")
-                    .resizable().scaledToFit()
-                    .frame(maxWidth: .infinity)
-                if isFailure {
-                    Text("Акжол не готов вас пропустить дальше")
-                        .font(.app(15, .medium)).foregroundStyle(.white)
-                        .padding(.horizontal, 18).padding(.vertical, 12)
-                        .background(AppColor.brandBlue.opacity(0.93), in: Capsule())
-                        .padding(.bottom, 8)
-                }
-            }
-            .padding(.top, 12)
-
+            imageBlock
             Spacer(minLength: 0)
-
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 if result.hasMistakes {
-                    SecondaryButton(title: "Провести работу над ошибками с Акжол", showsAvatar: true) {
-                        openMistakesChat()
-                    }
+                    secondaryButton
                 }
-                PrimaryButton(title: primaryTitle, background: isFailure ? AppColor.brandBlue : AppColor.brandBlue) {
-                    onPrimary()
-                }
+                mainButton
             }
-            .padding(.horizontal, AppLayout.homeMargin)
-            .padding(.bottom, 12)
+            .padding(.horizontal, 30).padding(.bottom, 24)
         }
         .background(.white)
+        .ignoresSafeArea(edges: .top)
         .sheet(item: $mistakesChat) { vm in
             AskAkzholSheet(vm: vm).presentationDetents([.large]).presentationDragIndicator(.visible)
         }
         .fullScreenCover(isPresented: $showPaywall) { PaywallView(canDismiss: true) }
     }
 
-    // MARK: Pieces
+    private var imageBlock: some View {
+        ZStack(alignment: .top) {
+            Image(isSuccess ? "quizdoneCar" : "quizFail")
+                .resizable().scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: 540)
+                .clipped()
+                .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 48, bottomTrailingRadius: 48))
 
-    private var sign: some View {
-        ZStack {
-            Circle().fill(isFailure ? AppColor.redError : AppColor.brandBlue)
-                .frame(width: 64, height: 64)
-            if isFailure {
-                Capsule().fill(.white).frame(width: 30, height: 8)
-            } else {
-                Image(systemName: "arrow.up").font(.system(size: 30, weight: .heavy)).foregroundStyle(.white)
+            VStack(spacing: 0) {
+                Image(isSuccess ? "straightSign" : "minusSign")
+                    .resizable().scaledToFit().frame(height: 70).padding(.top, 20)
+                Text(L.resultScore(result.score, result.total))
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundStyle(isSuccess ? Color(hex: "#0047FF") : Color(hex: "#E53935"))
+                    .padding(.top, 16)
+                Text(isSuccess ? L.resultSuccessSubtitle : L.resultFailSubtitle)
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundStyle(.black.opacity(0.87))
+                    .multilineTextAlignment(.center).lineSpacing(4).padding(.top, 8)
+                if let used = result.elapsedSeconds, let limit = result.timeLimit {
+                    Text("\(formatMMSS(used)) / \(formatMMSS(limit))")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.black.opacity(0.54)).padding(.top, 14)
+                    if result.timedOut {
+                        Text("Время вышло").font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(.black.opacity(0.45)).padding(.top, 6)
+                    }
+                }
             }
+            .padding(.top, 56)
+
+            if !isSuccess {
+                VStack {
+                    Spacer()
+                    Text(L.resultAkzholBubble)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColor.brandBlue)
+                        .padding(.horizontal, 20).padding(.vertical, 10)
+                        .background(.white, in: Capsule())
+                        .shadow(color: .black.opacity(0.08), radius: 15, y: 5)
+                        .padding(.bottom, 20)
+                }
+                .frame(height: 540)
+            }
+
+            HStack {
+                Spacer()
+                Button(action: onClose) {
+                    Image(systemName: "xmark").font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.black.opacity(0.87))
+                        .frame(width: 36, height: 36)
+                        .background(.white.opacity(0.92), in: Circle())
+                }.buttonStyle(.plain)
+            }
+            .padding(.top, 56).padding(.trailing, 12)
         }
     }
 
-    private var scoreText: some View {
-        (Text("\(result.score)").font(.app(40, .bold)).foregroundColor(isFailure ? AppColor.redError : AppColor.brandBlue)
-         + Text(" из ").font(.app(28, .semibold)).foregroundColor(AppColor.textBlack)
-         + Text("\(result.total)").font(.app(40, .bold)).foregroundColor(isFailure ? AppColor.redError : AppColor.brandBlue))
+    private var secondaryButton: some View {
+        Button { openMistakes() } label: {
+            HStack(spacing: 10) {
+                Image("akzhol").resizable().scaledToFit()
+                    .frame(width: 24, height: 24).clipShape(Circle()).background(AppColor.brandBlue, in: Circle())
+                Text(L.workOnMistakes)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppColor.brandBlue).multilineTextAlignment(.center)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16).frame(maxWidth: .infinity).frame(height: 72)
+            .overlay(RoundedRectangle(cornerRadius: 50).stroke(AppColor.brandBlue, lineWidth: 1))
+        }.buttonStyle(.plain)
     }
 
-    private var subtitle: String {
-        if result.timedOut { return "Время истекло. " + (isFailure ? "Этого балла недостаточно для успешного прохождения теста" : "") }
-        switch result.type {
-        case .success: return "Отлично! Продолжай тренироваться, чтобы на реальной сдаче не было ни единого сомнения"
-        case .failure: return "Этого балла недостаточно для успешного прохождения теста"
-        case .completion: return "Задание пройдено. Так держать!"
-        }
+    private var mainButton: some View {
+        Button { Haptics.impact(); onPrimary() } label: {
+            HStack(spacing: 8) {
+                Text(isSuccess ? L.resultNextTest : L.resultTryAgain)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                Image(systemName: "chevron.right").font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundStyle(.white).frame(maxWidth: .infinity).frame(height: 72)
+            .background(AppColor.brandBlue, in: Capsule())
+        }.buttonStyle(.plain)
     }
 
-    private var primaryTitle: String {
-        switch result.type {
-        case .success: "Продолжить"
-        case .failure: "Попробовать ещё"
-        case .completion: "Перейти на следующий тест"
-        }
-    }
-
-    private func openMistakesChat() {
+    private func openMistakes() {
         if !UsageLimits.shared.canUseAkzhol { showPaywall = true; return }
         let chat = ChatViewModel()
         chat.onLimitReached = { showPaywall = true }

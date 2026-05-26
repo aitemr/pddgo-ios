@@ -2,29 +2,28 @@
 //  MainTabView.swift
 //  pdd
 //
-//  Custom four-tab shell (Курс / Тесты / Акжол / Профиль), default Тесты.
+//  Custom three-tab shell (Тесты / Акжол / Профиль), default Тесты — matches
+//  the Flutter BottomNavBar (Home page exists but is not shown in the bar).
 //
 
 import SwiftUI
 
 enum PDDTab: Int, CaseIterable, Identifiable {
-    case home, tests, akzhol, profile
+    case tests, akzhol, profile
     var id: Int { rawValue }
 
     var title: String {
         switch self {
-        case .home: "Курс"
-        case .tests: "Тесты"
-        case .akzhol: "Акжол"
-        case .profile: "Профиль"
+        case .tests: L.navTests
+        case .akzhol: L.navAkzhol
+        case .profile: L.navProfile
         }
     }
-    var symbol: String {
+    var icon: String {
         switch self {
-        case .home: "graduationcap.fill"
-        case .tests: "book.fill"
-        case .akzhol: "waveform"
-        case .profile: "gearshape.fill"
+        case .tests: "nav_tests"
+        case .akzhol: "nav_akzhol"
+        case .profile: "nav_profile"
         }
     }
 }
@@ -35,8 +34,7 @@ struct MainTabView: View {
     var body: some View {
         Group {
             switch app.selectedTab {
-            case .home:    HomeRootView()
-            case .tests:   TestsRootView()
+            case .tests:   TestsRootView(onSwitchTab: { app.selectedTab = $0 })
             case .akzhol:  AkzholRootView()
             case .profile: ProfileRootView()
             }
@@ -52,43 +50,43 @@ struct MainTabView: View {
 struct PDDTabBar: View {
     @Binding var selected: PDDTab
 
+    private let active = AppColor.brandBlue          // #1B8FEF
+    private let inactive = AppColor.tabInactive      // #AAAAAA
+
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             ForEach(PDDTab.allCases) { tab in
+                let on = selected == tab
                 Button {
                     Haptics.impact()
                     selected = tab
                 } label: {
                     VStack(spacing: 6) {
-                        glyph(tab).frame(width: 28, height: 28)
-                        Text(tab.title).font(.app(12, .medium)).tracking(-0.36)
+                        Image(tab.icon)
+                            .renderingMode(.template)
+                            .resizable().scaledToFit()
+                            .frame(width: 28, height: 28)
+                        Text(tab.title)
+                            .font(.system(size: 12, weight: on ? .semibold : .regular, design: .rounded))
                     }
-                    .foregroundStyle(selected == tab ? AppColor.brandBlue : AppColor.tabInactive)
+                    .foregroundStyle(on ? active : inactive)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 64)
+                    .padding(.vertical, 4)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 10)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 10)
         .background(
-            UnevenRoundedRectangle(topLeadingRadius: 30, topTrailingRadius: 30)
+            UnevenRoundedRectangle(topLeadingRadius: 24, topTrailingRadius: 24)
                 .fill(.white)
                 .overlay(
-                    UnevenRoundedRectangle(topLeadingRadius: 30, topTrailingRadius: 30)
-                        .stroke(AppColor.navBorder, lineWidth: 1)
+                    UnevenRoundedRectangle(topLeadingRadius: 24, topTrailingRadius: 24)
+                        .stroke(AppColor.cardBorder, lineWidth: 1)
                 )
                 .ignoresSafeArea(edges: .bottom)
         )
-    }
-
-    @ViewBuilder private func glyph(_ tab: PDDTab) -> some View {
-        if tab == .akzhol {
-            VoiceChatGlyph()
-        } else {
-            Image(systemName: tab.symbol).font(.system(size: 23, weight: .medium))
-        }
     }
 }

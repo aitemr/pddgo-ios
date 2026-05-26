@@ -13,7 +13,6 @@ struct QuizFlowView: View {
 
     @State private var vm: QuizViewModel
     @State private var result: QuizResult?
-    @State private var showStreak = false
 
     init(config: QuizConfig) {
         self.config = config
@@ -22,12 +21,15 @@ struct QuizFlowView: View {
 
     var body: some View {
         Group {
-            if showStreak {
-                StreakView { dismiss() }
-            } else if let result {
-                ResultsView(result: result,
-                            onPrimary: { handlePrimary(result) },
-                            onClose: { dismiss() })
+            if let result {
+                switch result.type {
+                case .completion:
+                    CompletionView { dismiss() }
+                default:
+                    ResultsView(result: result,
+                                onPrimary: { handlePrimary(result) },
+                                onClose: { dismiss() })
+                }
             } else {
                 QuizPage(vm: vm, onClose: { dismiss() })
             }
@@ -37,12 +39,8 @@ struct QuizFlowView: View {
 
     private func handlePrimary(_ r: QuizResult) {
         switch r.type {
-        case .success:
-            if r.isTrialExam { showStreak = true } else { dismiss() }
-        case .failure:
-            restart()
-        case .completion:
-            dismiss()
+        case .success, .completion: dismiss()
+        case .failure: restart()
         }
     }
 
@@ -51,7 +49,6 @@ struct QuizFlowView: View {
         fresh.onFinish = { result = $0 }
         vm = fresh
         result = nil
-        showStreak = false
     }
 }
 
