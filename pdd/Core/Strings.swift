@@ -10,9 +10,9 @@ import Foundation
 
 enum L {
     // Nav
-    static let navTests = "Тесты"
-    static let navAkzhol = "Акжол"
-    static let navProfile = "Профиль"
+    static var navTests: String   { Localizer.pick(ru: "Тесты",   kk: "Тесттер", en: "Tests") }
+    static var navAkzhol: String  { Localizer.pick(ru: "Акжол",   kk: "Ақжол",   en: "Akzhol") }
+    static var navProfile: String { Localizer.pick(ru: "Профиль", kk: "Профиль", en: "Profile") }
 
     // Tests
     static let testMainTitle = "Пробное\nтестирование\nПДД РК"
@@ -42,36 +42,44 @@ enum L {
     }
 
     // Road-sign detector promo
-    static let roadsignDetector = "Определитель\nдорожных знаков"
-    static let go = "Перейти"
+    static var roadsignDetector: String { Localizer.pick(ru: "Определитель\nдорожных знаков", kk: "Жол белгілерін\nанықтаушы", en: "Road sign\ndetector") }
+    static var go: String { Localizer.pick(ru: "Перейти", kk: "Өту", en: "Go") }
+
+    // Road-sign detector screen
+    static var roadsignTitle: String        { Localizer.pick(ru: "Определитель знаков", kk: "Белгілерді анықтау", en: "Sign detector") }
+    static var roadsignIntroTitle: String   { Localizer.pick(ru: "Сфотографируй\nили выбери знак", kk: "Белгіні суретке түсір\nнемесе таңда", en: "Snap or pick\na road sign") }
+    static var roadsignIntroSubtitle: String { Localizer.pick(ru: "Акжол распознает знак и объяснит, что он означает", kk: "Ақжол белгіні таниды және мағынасын түсіндіреді", en: "Akzhol will recognize the sign and explain it") }
+    static var roadsignCameraBtn: String    { Localizer.pick(ru: "Камера", kk: "Камера", en: "Camera") }
+    static var roadsignGalleryBtn: String   { Localizer.pick(ru: "Галерея", kk: "Галерея", en: "Gallery") }
+    static var roadsignPromptText: String   { Localizer.pick(ru: "Что это за дорожный знак? Объясни кратко и понятно.", kk: "Бұл қандай жол белгісі? Қысқа әрі түсінікті түсіндір.", en: "What road sign is this? Explain briefly and clearly.") }
 
     // Quiz
-    static let quizCheck = "Проверить"
-    static let quizNext = "Далее"
-    static let quizFinish = "Завершить"
-    static let quizCorrectPrefix = "Правильно: "
-    static let askAkzhol = "Спросить Акжола"
-    static let aiDefaultQuestion = "Почему мой ответ был неправильным?"
+    static var quizCheck: String         { Localizer.pick(ru: "Проверить", kk: "Тексеру", en: "Check") }
+    static var quizNext: String          { Localizer.pick(ru: "Далее",     kk: "Келесі",  en: "Next") }
+    static var quizFinish: String        { Localizer.pick(ru: "Завершить", kk: "Аяқтау",  en: "Finish") }
+    static var quizCorrectPrefix: String { Localizer.pick(ru: "Правильно: ", kk: "Дұрыс: ", en: "Correct: ") }
+    static var askAkzhol: String         { Localizer.pick(ru: "Спросить Акжола", kk: "Ақжолдан сұрау", en: "Ask Akzhol") }
+    static var aiDefaultQuestion: String { Localizer.pick(ru: "Почему мой ответ был неправильным?", kk: "Менің жауабым неге қате болды?", en: "Why was my answer wrong?") }
     static let quizReplayUnavailable = "Не удалось открыть этот тест. Запись устарела или вопросы обновились."
 
     // Results
     static let resultSuccessSubtitle = "Отлично! Ты бы сдал экзамен 🎉\nПродолжай тренироваться,\nчтобы на реальной сдаче\nне было ни единого сомнения"
     static let resultFailSubtitle = "Этого балла недостаточно для\nуспешного прохождения теста"
     static let resultAkzholBubble = "Акжол не готов вас пропустить дальше"
-    static let resultNextTest = "Перейди на следующий тест"
-    static let resultTryAgain = "Попробовать еще"
+    static var resultNextTest: String { Localizer.pick(ru: "Перейди на следующий тест", kk: "Келесі тестке өту", en: "Go to the next test") }
+    static var resultTryAgain: String { Localizer.pick(ru: "Попробовать еще", kk: "Қайта көру", en: "Try again") }
     static let completionTitle = "Вы уже на шаг ближе\nк своим правам!"
     static let completionSubtitle = "Продолжайте обучение и будьте готовы\nк успешной сдаче экзамена"
-    static let continueBtn = "Продолжить"
+    static var continueBtn: String { Localizer.pick(ru: "Продолжить", kk: "Жалғастыру", en: "Continue") }
 
     static func resultScore(_ s: Int, _ t: Int) -> String { "\(s) из \(t)" }
 
     // Akzhol AI
     static let akzholGreeting = "Здравия желаю,\nменя зовут Акжол"
     static let akzholCanHelp = "Я могу вам помочь с:"
-    static let akzholName = "Акжол"
-    static let akzholRole = "Сотрудник МВД РК"
-    static let chatInputHint = "Напишите свой вопрос"
+    static var akzholName: String   { Localizer.pick(ru: "Акжол", kk: "Ақжол", en: "Akzhol") }
+    static var akzholRole: String   { Localizer.pick(ru: "Сотрудник МВД РК", kk: "ҚР ІІМ қызметкері", en: "Officer, MIA RK") }
+    static var chatInputHint: String { Localizer.pick(ru: "Напишите свой вопрос", kk: "Сұрағыңызды жазыңыз", en: "Type your question") }
     static let akzholCard1Title = "С решением вопросов\nпо ПДД РК"
     static let akzholCard1Subtitle = "Оформление ДТП, спорные ситуации и\nвзаимодействие с органами — быстро,\nпрофессионально и в рамках закона"
     static let akzholCard2Title = "Помогу тебе с\nэкзаменационными\nвопросами ПДД"
@@ -83,32 +91,33 @@ enum L {
     static let freemiumOpenPremium = "Оформить Premium"
 
     // Profile
-    static let profileDemoUserName = "Гость"
-    static let licenseCatB = "Категория B"
-    static let profileLevelTitle = "Прогресс"
-    static let profileLevelLearner = "Ученик"
-    static let profileLevelDriver = "Водитель"
-    static let profileLevelExpert = "Эксперт"
-    static let profileNotifications = "Уведомления"
-    static let profileHaptics = "Вибрация"
-    static let favoritesTitle = "Избранное"
-    static let editProfile = "Редактировать профиль"
-    static let selectLanguage = "Язык"
-    static let privacyPolicy = "Политика конфиденциальности"
-    static let termsOfUse = "Условия использования"
-    static let animationsToggle = "Анимации"
-    static let rateApp = "Оценить приложение"
-    static let shareApp = "Поделиться приложением"
-    static let deleteAccount = "Удалить аккаунт"
-    static let logoutTitle = "Выйти из аккаунта"
-    static let logoutConfirmTitle = "Выйти из аккаунта?"
-    static let logoutConfirmMessage = "Вы выйдете из профиля и вернётесь на экран приветствия."
-    static let logoutConfirmButton = "Выйти"
-    static let cancel = "Отмена"
-    static let supportTitle = "Служба поддержки"
-    static let supportSubtitle = "Поможем если столкнетесь с проблемой"
-    static let premium = "Premium"
-    static let langSelectionTitle = "Выбор языка"
+    static var profileDemoUserName: String   { Localizer.pick(ru: "Гость", kk: "Қонақ", en: "Guest") }
+    static var licenseCatB: String           { Localizer.pick(ru: "Категория B", kk: "B санаты", en: "Category B") }
+    static var profileLevelTitle: String     { Localizer.pick(ru: "Прогресс", kk: "Прогресс", en: "Progress") }
+    static var profileLevelLearner: String   { Localizer.pick(ru: "Ученик", kk: "Үйренуші", en: "Learner") }
+    static var profileLevelDriver: String    { Localizer.pick(ru: "Водитель", kk: "Жүргізуші", en: "Driver") }
+    static var profileLevelExpert: String    { Localizer.pick(ru: "Эксперт", kk: "Сарапшы", en: "Expert") }
+    static var profileNotifications: String  { Localizer.pick(ru: "Уведомления", kk: "Хабарландырулар", en: "Notifications") }
+    static var profileHaptics: String        { Localizer.pick(ru: "Вибрация", kk: "Дірілдеу", en: "Haptics") }
+    static var profileSound: String          { Localizer.pick(ru: "Звуки", kk: "Дыбыстар", en: "Sounds") }
+    static var favoritesTitle: String        { Localizer.pick(ru: "Избранное", kk: "Таңдаулылар", en: "Favorites") }
+    static var editProfile: String           { Localizer.pick(ru: "Редактировать профиль", kk: "Профильді өзгерту", en: "Edit Profile") }
+    static var selectLanguage: String        { Localizer.pick(ru: "Язык", kk: "Тіл", en: "Language") }
+    static var privacyPolicy: String         { Localizer.pick(ru: "Политика конфиденциальности", kk: "Құпиялылық саясаты", en: "Privacy Policy") }
+    static var termsOfUse: String            { Localizer.pick(ru: "Условия использования", kk: "Қолдану шарттары", en: "Terms of Use") }
+    static var animationsToggle: String      { Localizer.pick(ru: "Анимации", kk: "Анимациялар", en: "Animations") }
+    static var rateApp: String               { Localizer.pick(ru: "Оценить приложение", kk: "Қолданбаға баға беру", en: "Rate the App") }
+    static var shareApp: String              { Localizer.pick(ru: "Поделиться приложением", kk: "Қолданбамен бөлісу", en: "Share the App") }
+    static var deleteAccount: String         { Localizer.pick(ru: "Удалить аккаунт", kk: "Аккаунтты жою", en: "Delete Account") }
+    static var logoutTitle: String           { Localizer.pick(ru: "Выйти из аккаунта", kk: "Аккаунттан шығу", en: "Log Out") }
+    static var logoutConfirmTitle: String    { Localizer.pick(ru: "Выйти из аккаунта?", kk: "Аккаунттан шығасыз ба?", en: "Log out?") }
+    static var logoutConfirmMessage: String  { Localizer.pick(ru: "Вы выйдете из профиля и вернётесь на экран приветствия.", kk: "Профильден шығып, сәлемдесу экранына ораласыз.", en: "You'll be signed out and returned to the welcome screen.") }
+    static var logoutConfirmButton: String   { Localizer.pick(ru: "Выйти", kk: "Шығу", en: "Log Out") }
+    static var cancel: String                { Localizer.pick(ru: "Отмена", kk: "Болдырмау", en: "Cancel") }
+    static var supportTitle: String          { Localizer.pick(ru: "Служба поддержки", kk: "Қолдау қызметі", en: "Support") }
+    static var supportSubtitle: String       { Localizer.pick(ru: "Поможем если столкнетесь с проблемой", kk: "Мәселе туындаса көмектесеміз", en: "We're here if you run into a problem") }
+    static var premium: String               { Localizer.pick(ru: "Premium", en: "Premium") }
+    static var langSelectionTitle: String    { Localizer.pick(ru: "Выбор языка", kk: "Тіл таңдау", en: "Choose language") }
 
     static func profileCorrectAnswersProgress(_ done: Int, _ total: Int) -> String {
         "Правильных ответов: \(done) из \(total)"
@@ -137,8 +146,8 @@ enum L {
     static func paywallCtaWithPrice(_ price: String) -> String { "Продолжить за \(price)" }
 
     // Onboarding
-    static let onboardingNext = "Далее"
-    static let onboardingStart = "Начать"
+    static var onboardingNext: String  { Localizer.pick(ru: "Далее", kk: "Келесі", en: "Next") }
+    static var onboardingStart: String { Localizer.pick(ru: "Начать", kk: "Бастау", en: "Start") }
     // Survey
     static let surveyNext = "Следующий вопрос"
     static let surveyFinish = "Завершить"

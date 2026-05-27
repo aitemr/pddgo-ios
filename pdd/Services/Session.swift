@@ -43,6 +43,7 @@ final class Session {
         notificationsEnabled = Store.bool(StorageKey.notificationsEnabled)
         hapticsEnabled = UserDefaults.standard.object(forKey: StorageKey.hapticsEnabled) as? Bool ?? true
         animationsEnabled = UserDefaults.standard.object(forKey: StorageKey.animationsEnabled) as? Bool ?? true
+        soundEnabled = UserDefaults.standard.object(forKey: StorageKey.soundEnabled) as? Bool ?? true
     }
 
     var user: UserInfo?
@@ -52,6 +53,7 @@ final class Session {
     var notificationsEnabled: Bool { didSet { Store.set(notificationsEnabled, StorageKey.notificationsEnabled) } }
     var hapticsEnabled: Bool { didSet { Store.set(hapticsEnabled, StorageKey.hapticsEnabled) } }
     var animationsEnabled: Bool { didSet { Store.set(animationsEnabled, StorageKey.animationsEnabled) } }
+    var soundEnabled: Bool { didSet { Store.set(soundEnabled, StorageKey.soundEnabled) } }
 
     var displayUser: UserInfo { user ?? .guest }
 

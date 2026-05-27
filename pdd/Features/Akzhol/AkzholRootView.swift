@@ -61,7 +61,7 @@ private struct AkzholStartView: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    Image("ai_akzhol").resizable().scaledToFit().frame(maxHeight: 240).padding(.top, 36)
+                    Image("ai_akzhol").resizable().scaledToFit().frame(width: 120, height: 120).padding(.top, 36)
                     Text(L.akzholGreeting)
                         .font(.system(size: 28, weight: .semibold, design: .rounded))
                         .multilineTextAlignment(.center).lineSpacing(1)

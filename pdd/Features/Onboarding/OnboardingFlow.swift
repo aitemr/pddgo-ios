@@ -269,7 +269,7 @@ private struct SocialAuthView: View {
     private func signIn(_ provider: AuthProvider) {
         busy = true
         Task { @MainActor in
-            if let info = try? await LocalAuthService.shared.signIn(with: provider) { Session.shared.update(user: info) }
+            if let info = try? await FirebaseAuthService.shared.signIn(with: provider) { Session.shared.update(user: info) }
             busy = false; onDone()
         }
     }

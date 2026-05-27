@@ -55,13 +55,13 @@ final class AppState {
     func enterMain() { route = .main }
 
     func signOut() {
-        Task { await LocalAuthService.shared.signOut() }
+        Task { await FirebaseAuthService.shared.signOut() }
         Session.shared.clear()
         route = .onboarding
     }
 
     func deleteAccount() {
-        Task { try? await LocalAuthService.shared.deleteAccount() }
+        Task { try? await FirebaseAuthService.shared.deleteAccount() }
         Session.shared.clear()
         route = .onboarding
     }

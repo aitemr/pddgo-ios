@@ -115,6 +115,8 @@ struct ProfileRootView: View {
                     if on { Task { _ = await PushService.shared.requestAuthorization() } } else { PushService.shared.disable() } }))
             Divider().overlay(Color(hex: "#DDDDDD"))
             settingsRow(L.profileHaptics, isOn: $session.hapticsEnabled)
+            Divider().overlay(Color(hex: "#DDDDDD"))
+            settingsRow(L.profileSound, isOn: $session.soundEnabled)
         }
         .padding(.horizontal, 20).padding(.vertical, 4)
         .background(Color(hex: "#F5F5F5"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))

@@ -94,9 +94,11 @@ final class QuizViewModel {
         if isCorrect {
             correctAnswers += 1
             Haptics.notify(.success)
+            SoundEffects.play(.correct)
         } else {
             MistakesBank.shared.addWrongIds([current.id])
             Haptics.notify(.error)
+            SoundEffects.play(.wrong)
         }
         ProgressStore.shared.recordQuestionAnswer(isCorrect: isCorrect)
     }
@@ -150,6 +152,10 @@ final class QuizViewModel {
 
         // Persist (skipped entirely in replay).
         if !isReplay {
+            // Daily streak + widget snapshot — fires once per day on any quiz finish.
+            StreakStore.shared.recordActivity()
+            WidgetSnapshot.write()
+
             if config.isLessonPractice {
                 UsageLimits.shared.recordLessonPracticeCompleted(hash: config.moduleId)
             } else if config.isTrialExam {

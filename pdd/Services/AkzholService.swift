@@ -47,11 +47,25 @@ final class AkzholService {
     }
 
     /// Sends the conversation and returns the assistant reply text.
+    /// Prefers Apple Intelligence (on-device) when available and there are
+    /// no image attachments; otherwise falls back to the Gemini cloud API.
     func reply(history: [ChatMessage], lang: AppLanguage) async throws -> String {
+        let trimmed = Array(history.suffix(maxHistory))
+        let hasImages = trimmed.contains { !$0.imageDatas.isEmpty }
+
+        // Apple Intelligence path — text-only, no key required.
+        if !hasImages, #available(iOS 26.0, *), OnDeviceAkzhol.isAvailable {
+            do {
+                return try await OnDeviceAkzhol.reply(history: trimmed, lang: lang)
+            } catch {
+                // Fall through to cloud on any on-device failure.
+            }
+        }
+
+        // Cloud path (Gemini).
         guard let key = apiKey else {
             return offlineFallback(lang: lang)
         }
-        let trimmed = Array(history.suffix(maxHistory))
         var lastError: Error?
         for model in models {
             do {

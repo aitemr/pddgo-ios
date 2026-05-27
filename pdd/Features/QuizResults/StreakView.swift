@@ -9,9 +9,10 @@ import SwiftUI
 
 struct CompletionView: View {
     var onContinue: () -> Void
+    @State private var streak = StreakStore.shared
 
     private let days = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВСК"]
-    private let fireOn = [false, false, true, true, false, false, false]
+    private var fireOn: [Bool] { streak.weekFires() }
 
     var body: some View {
         VStack(spacing: 0) {

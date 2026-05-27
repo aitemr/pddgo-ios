@@ -49,6 +49,17 @@ extension View {
     func appKerning(_ size: CGFloat) -> some View { tracking(-0.03 * size) }
 }
 
+enum AppAnimation {
+    /// Snappy spring for view-state changes (selection, option tiles).
+    static var snappy: Animation? {
+        Session.shared.animationsEnabled ? .spring(response: 0.28, dampingFraction: 0.78) : nil
+    }
+    /// Smoother spring for page-level transitions (question paging).
+    static var page: Animation? {
+        Session.shared.animationsEnabled ? .spring(response: 0.45, dampingFraction: 0.86) : nil
+    }
+}
+
 enum AppLayout {
     static let homeMargin: CGFloat = 30
     static let onboardingMargin: CGFloat = 24

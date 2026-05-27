@@ -36,7 +36,13 @@ struct QuizPage: View {
                     }
                 }
                 .padding(.horizontal, 20).padding(.vertical, 16)
+                .id(vm.currentIndex)
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .move(edge: .trailing)),
+                    removal:   .opacity.combined(with: .move(edge: .leading))
+                ))
             }
+            .animation(AppAnimation.page, value: vm.currentIndex)
             bottomBar
         }
         .background(.white)
@@ -204,7 +210,11 @@ struct OptionTile: View {
         VStack(alignment: .leading, spacing: 0) {
             Button(action: action) {
                 HStack(spacing: 12) {
-                    Image(systemName: icon).font(.system(size: 22)).foregroundStyle(iconColor)
+                    Image(systemName: icon)
+                        .font(.system(size: 22))
+                        .foregroundStyle(iconColor)
+                        .contentTransition(.symbolEffect(.replace))
+                        .symbolEffect(.bounce, value: isResolved)
                     Text(text).font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(.black).multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -213,6 +223,8 @@ struct OptionTile: View {
                 .padding(16)
                 .background(bg, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(border, lineWidth: borderWidth))
+                .scaleEffect(state == .selected ? 0.98 : 1)
+                .animation(AppAnimation.snappy, value: state)
             }
             .buttonStyle(.plain)
             .disabled(state == .correct || state == .incorrect || isSubmittedNormal)
@@ -222,9 +234,13 @@ struct OptionTile: View {
                     .font(.system(size: 14, design: .rounded))
                     .foregroundStyle(Color(hex: "#898989")).lineSpacing(2)
                     .padding(.top, 8).padding(.bottom, 12).padding(.leading, 16)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(AppAnimation.snappy, value: explanation)
     }
+
+    private var isResolved: Bool { state == .correct || state == .incorrect }
 
     // When submitted, normal (non-selected, non-correct) tiles are non-interactive.
     private var isSubmittedNormal: Bool { false }

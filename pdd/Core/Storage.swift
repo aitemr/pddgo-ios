@@ -31,6 +31,7 @@ enum StorageKey {
     static let notificationsEnabled = "notificationsEnabled"
     static let hapticsEnabled = "hapticsEnabled"
     static let animationsEnabled = "animationsEnabled"
+    static let soundEnabled = "soundEnabled"
     static let funnelCompleted = "funnelCompleted"
     static let isLoggedIn = "isLoggedIn"
     static let session = "session_user_info_v1"
