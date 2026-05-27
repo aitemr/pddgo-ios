@@ -38,8 +38,10 @@ final class Session {
         user = Store.decode(UserInfo.self, StorageKey.session)
         isLoggedIn = Store.bool(StorageKey.isLoggedIn)
         funnelCompleted = Store.bool(StorageKey.funnelCompleted)
-        let raw = Store.string(StorageKey.lang) ?? AppLanguage(rawValue: Locale.current.language.languageCode?.identifier ?? "")?.rawValue ?? "kk"
-        language = AppLanguage(rawValue: raw) ?? .kk
+        // Default to Russian (the primary content language) until UI strings
+        // are fully translated. The user can switch via the language sheet.
+        let raw = Store.string(StorageKey.lang) ?? "ru"
+        language = AppLanguage(rawValue: raw) ?? .ru
         notificationsEnabled = Store.bool(StorageKey.notificationsEnabled)
         hapticsEnabled = UserDefaults.standard.object(forKey: StorageKey.hapticsEnabled) as? Bool ?? true
         animationsEnabled = UserDefaults.standard.object(forKey: StorageKey.animationsEnabled) as? Bool ?? true

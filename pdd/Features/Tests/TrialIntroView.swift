@@ -45,7 +45,7 @@ struct TestDetailView: View {
                         onStart(); dismiss()
                     }
                     .padding(.top, 30)
-                    .padding(.bottom, 42)
+                    .padding(.bottom, 100)
                 }
                 .padding(.horizontal, 30)
             }
