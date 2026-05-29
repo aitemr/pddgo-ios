@@ -13,10 +13,44 @@
 		FB00000000000000000000C3 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = FB00000000000000000000B3 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		DD0000000000000000001C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AD8631822FC57D7C006464B7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD00000000000000000011;
+			remoteInfo = PddWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DD00000000000000000019 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DD0000000000000000001A /* PddWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		AD86318A2FC57D7C006464B7 /* pdd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pdd.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD00000000000000000012 /* PddWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PddWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DD0000000000000000001D /* Exceptions for "PddWidgets" folder in "PddWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = DD00000000000000000011 /* PddWidgets */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AD86318C2FC57D7C006464B7 /* pdd */ = {
@@ -27,23 +61,12 @@
 		DD00000000000000000010 /* PddWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				DD0000000000000000001D /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				DD0000000000000000001D /* Exceptions for "PddWidgets" folder in "PddWidgets" target */,
 			);
 			path = PddWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DD0000000000000000001D /* Exceptions for "PddWidgets" folder in "PddWidgets" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-				PddWidgets.entitlements,
-			);
-			target = DD00000000000000000011 /* PddWidgets */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AD8631872FC57D7C006464B7 /* Frameworks */ = {
@@ -64,20 +87,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		DD00000000000000000019 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				DD0000000000000000001A /* PddWidgets.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXGroup section */
 		AD8631812FC57D7C006464B7 = {
@@ -233,16 +242,6 @@
 			targetProxy = DD0000000000000000001C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXContainerItemProxy section */
-		DD0000000000000000001C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = AD8631822FC57D7C006464B7 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DD00000000000000000011;
-			remoteInfo = PddWidgets;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin XCBuildConfiguration section */
 		AD8631932FC57D7D006464B7 /* Debug */ = {

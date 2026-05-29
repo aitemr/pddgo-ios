@@ -39,6 +39,7 @@ struct WidgetSnapshot: Codable {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         SharedDefaults.current.set(data, forKey: storageKey)
         WidgetCenter.shared.reloadAllTimelines()
+        PhoneWatchSync.shared.send(snapshot)
     }
 
     /// Reads the latest snapshot from shared storage.
