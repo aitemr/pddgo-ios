@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import WidgetKit
 
 struct WidgetSnapshot: Codable {
     let correctTotal: Int
@@ -37,6 +38,7 @@ struct WidgetSnapshot: Codable {
         let snapshot = current()
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         SharedDefaults.current.set(data, forKey: storageKey)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Reads the latest snapshot from shared storage.

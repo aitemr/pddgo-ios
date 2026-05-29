@@ -71,7 +71,11 @@ struct HomeRootView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Добро пожаловать!").font(.app(28, .bold)).foregroundStyle(.white)
                 Text("Готовься к экзамену по ПДД РК").font(.app(16)).foregroundStyle(.white.opacity(0.9))
-                progressBadge
+                HStack(spacing: 10) {
+                    progressBadge
+                    StreakBadge()
+                }
+                .padding(.top, 8)
             }
             .padding(.horizontal, AppLayout.homeMargin)
             .padding(.bottom, 24)
@@ -88,7 +92,6 @@ struct HomeRootView: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
         .background(.white.opacity(0.18), in: Capsule())
-        .padding(.top, 8)
     }
 
     private var videoBanner: some View {

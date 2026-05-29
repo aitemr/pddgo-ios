@@ -38,7 +38,8 @@ struct ProfileRootView: View {
                         .foregroundStyle(Color(hex: "#B6B6B6")).padding(.top, 4)
 
                     VStack(spacing: 0) {
-                        levelCard.padding(.top, 32)
+                        StreakCard().padding(.top, 32)
+                        levelCard.padding(.top, 16)
                         notificationsCard.padding(.top, 24)
                         menuCard.padding(.top, 16)
                         supportButton.padding(.top, 12)
@@ -46,7 +47,7 @@ struct ProfileRootView: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, 120)
             }
             .background(.white)
             .navigationDestination(for: ProfileRoute.self) { route in
@@ -135,46 +136,53 @@ struct ProfileRootView: View {
 
     private var menuCard: some View {
         VStack(spacing: 0) {
-            menuRow(L.premium) { showPaywall = true }
+            menuRow(icon: "crown.fill",            tint: Color(hex: "#FFB800"), L.premium)        { showPaywall = true }
             menuDivider
-            menuRow(L.favoritesTitle) { path.append(ProfileRoute.favorites) }
+            menuRow(icon: "star.fill",             tint: Color(hex: "#FFB800"), L.favoritesTitle) { path.append(ProfileRoute.favorites) }
             menuDivider
-            menuRow(L.editProfile) { path.append(ProfileRoute.edit) }
+            menuRow(icon: "person.crop.circle.fill", tint: AppColor.brandBlue,  L.editProfile)    { path.append(ProfileRoute.edit) }
             menuDivider
-            menuRow(L.selectLanguage) { showLanguage = true }
+            menuRow(icon: "globe",                 tint: AppColor.brandBlue,    L.selectLanguage) { showLanguage = true }
             menuDivider
-            menuRow(L.privacyPolicy) { }
+            menuRow(icon: "lock.shield.fill",      tint: Color(hex: "#34C759"), L.privacyPolicy)  { }
             menuDivider
-            menuRow(L.termsOfUse) { }
+            menuRow(icon: "doc.text.fill",         tint: Color(hex: "#6C757D"), L.termsOfUse)     { }
             menuDivider
-            HStack {
+            HStack(spacing: 12) {
+                menuIcon("wand.and.stars", tint: Color(hex: "#AF52DE"))
                 Text(L.animationsToggle).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(AppColor.textBlack)
-                    .padding(.leading, 12)
                 Spacer()
                 Toggle("", isOn: $session.animationsEnabled).labelsHidden().tint(AppColor.brandBlue).scaleEffect(0.85)
             }.padding(.vertical, 10)
             menuDivider
-            menuRow(L.rateApp) { requestReview() }
+            menuRow(icon: "star.bubble.fill",      tint: Color(hex: "#FF9500"), L.rateApp)        { requestReview() }
             menuDivider
             ShareLink(item: URL(string: "https://apps.apple.com/app/id000000000")!) {
-                menuRowLabel(L.shareApp)
+                menuRowLabel(icon: "square.and.arrow.up", tint: AppColor.brandBlue, L.shareApp)
             }
         }
         .padding(.horizontal, 20).padding(.vertical, 16)
         .background(Color(hex: "#F5F5F5"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private func menuRow(_ text: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) { menuRowLabel(text) }.buttonStyle(.plain)
+    private func menuRow(icon: String, tint: Color, _ text: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) { menuRowLabel(icon: icon, tint: tint, text) }.buttonStyle(.plain)
     }
-    private func menuRowLabel(_ text: String) -> some View {
-        HStack {
+    private func menuRowLabel(icon: String, tint: Color, _ text: String) -> some View {
+        HStack(spacing: 12) {
+            menuIcon(icon, tint: tint)
             Text(text).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(AppColor.textBlack)
-                .padding(.leading, 12)
             Spacer()
             Image(systemName: "chevron.right").foregroundStyle(Color(hex: "#4573F1")).font(.system(size: 16))
         }
-        .padding(.vertical, 16).contentShape(Rectangle())
+        .padding(.vertical, 14).contentShape(Rectangle())
+    }
+    private func menuIcon(_ name: String, tint: Color) -> some View {
+        Image(systemName: name)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 28, height: 28)
+            .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
     private var menuDivider: some View { Rectangle().fill(Color(hex: "#DDDDDD")).frame(height: 1) }
 
@@ -182,8 +190,11 @@ struct ProfileRootView: View {
 
     private var supportButton: some View {
         Button { } label: {
-            HStack(spacing: 12) {
-                Image("support").resizable().scaledToFit().frame(width: 44, height: 44)
+            HStack(spacing: 14) {
+                Image(systemName: "headphones.circle.fill")
+                    .font(.system(size: 38, weight: .regular))
+                    .foregroundStyle(.white, .white.opacity(0.22))
+                    .symbolRenderingMode(.palette)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L.supportTitle).font(.system(size: 16, weight: .medium, design: .rounded)).foregroundStyle(.white)
                     Text(L.supportSubtitle).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(.white)
