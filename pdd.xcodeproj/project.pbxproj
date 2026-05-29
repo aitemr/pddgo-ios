@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		DD0000000000000000001A /* PddWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000012 /* PddWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		DD0000000000000000002A /* PddWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DD00000000000000000022 /* PddWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FB00000000000000000000C1 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB00000000000000000000B1 /* FirebaseCore */; };
 		FB00000000000000000000C2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FB00000000000000000000B2 /* FirebaseAuth */; };
 		FB00000000000000000000C3 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = FB00000000000000000000B3 /* GoogleSignIn */; };
@@ -22,13 +21,6 @@
 			remoteGlobalIDString = DD00000000000000000011;
 			remoteInfo = PddWidgets;
 		};
-		DD0000000000000000002C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = AD8631822FC57D7C006464B7 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DD00000000000000000021;
-			remoteInfo = PddWatch;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,17 +33,6 @@
 				DD0000000000000000001A /* PddWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DD00000000000000000029 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				DD0000000000000000002A /* PddWatch.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -314,11 +295,6 @@
 			isa = PBXTargetDependency;
 			target = DD00000000000000000011 /* PddWidgets */;
 			targetProxy = DD0000000000000000001C /* PBXContainerItemProxy */;
-		};
-		DD0000000000000000002B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DD00000000000000000021 /* PddWatch */;
-			targetProxy = DD0000000000000000002C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

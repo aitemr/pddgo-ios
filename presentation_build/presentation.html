@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PDD KZ</title>
+<style>
+    @page { size: A4 landscape; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        color: #1D1D1F;
+        background: #F5F5F7;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+    }
+
+    .slide {
+        width: 297mm;
+        height: 209mm;
+        padding: 12mm 16mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        position: relative;
+        background: #F5F5F7;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .slide:last-child { page-break-after: auto; }
+
+    /* Apple-style typography */
+    .display {
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1.02;
+        color: #1D1D1F;
+    }
+    .display-xl { font-size: 110px; }
+    .display-lg { font-size: 76px; }
+    .display-md { font-size: 56px; }
+    .kicker {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #6E6E73;
+    }
+    .gradient-text {
+        color: #0071E3;
+    }
+    .accent { color: #0071E3; }
+    .accent-purple { color: #5E5CE6; }
+    .accent-pink { color: #BF5AF2; }
+    .muted { color: #6E6E73; }
+
+    /* Cards (bento) */
+    .card {
+        background: #FFFFFF;
+        border-radius: 22px;
+        padding: 7mm 8mm;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .card-dark { background: #1D1D1F; color: #F5F5F7; }
+    .card-blue { background: linear-gradient(135deg, #0071E3 0%, #0A84FF 100%); color: #fff; }
+    .card-grad-a { background: linear-gradient(135deg, #5E5CE6 0%, #BF5AF2 100%); color: #fff; }
+    .card-grad-b { background: linear-gradient(135deg, #FF9F0A 0%, #FF375F 100%); color: #fff; }
+    .card-mint   { background: linear-gradient(135deg, #30D158 0%, #00C7BE 100%); color: #fff; }
+
+    .card .title {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        margin-bottom: 3mm;
+    }
+    .card .big {
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        margin-bottom: 2mm;
+    }
+    .card .sub {
+        font-size: 13px;
+        opacity: 0.7;
+        line-height: 1.4;
+    }
+    .card-dark .sub, .card-blue .sub, .card-grad-a .sub, .card-grad-b .sub, .card-mint .sub { opacity: 0.85; }
+
+    .card .body {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #424245;
+    }
+    .card-dark .body, .card-blue .body, .card-grad-a .body, .card-grad-b .body, .card-mint .body { color: rgba(255,255,255,0.9); }
+
+    .footer-bar {
+        position: absolute;
+        bottom: 6mm; left: 16mm; right: 16mm;
+        display: flex; justify-content: space-between;
+        font-size: 10px; color: #86868B;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    /* Phone frame */
+    .phone {
+        background: #1D1D1F;
+        border-radius: 32px;
+        padding: 3mm;
+        display: inline-block;
+        box-shadow: 0 30px 60px rgba(29,29,31,0.25), 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .phone img {
+        display: block;
+        border-radius: 26px;
+        width: 100%;
+        height: auto;
+    }
+
+    /* COVER */
+    .cover {
+        background: radial-gradient(ellipse at 30% 20%, #E8F0FE 0%, #F5F5F7 50%, #F5F5F7 100%);
+        justify-content: center;
+        padding: 30mm 30mm;
+    }
+    .cover .kicker { margin-bottom: 14mm; color: #0071E3; }
+    .cover h1 {
+        font-size: 140px;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        line-height: 0.95;
+        margin-bottom: 10mm;
+        color: #1D1D1F;
+    }
+    .cover .tagline {
+        font-size: 30px;
+        font-weight: 500;
+        max-width: 220mm;
+        line-height: 1.25;
+        color: #1D1D1F;
+        letter-spacing: -0.02em;
+    }
+    .cover .meta {
+        position: absolute;
+        bottom: 18mm; left: 30mm;
+        font-size: 12px;
+        color: #86868B;
+        letter-spacing: 0.2em;
+    }
+
+    /* Section header slide */
+    .section-hero { justify-content: flex-end; padding: 22mm 22mm 24mm; }
+    .section-hero .kicker { margin-bottom: 6mm; }
+    .section-hero h2 {
+        font-size: 96px;
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 0.98;
+        margin-bottom: 8mm;
+    }
+    .section-hero p {
+        font-size: 22px;
+        line-height: 1.4;
+        color: #424245;
+        max-width: 200mm;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+    }
+
+    /* Bento grid - main */
+    .bento {
+        flex: 1;
+        display: grid;
+        gap: 5mm;
+        margin-top: 6mm;
+    }
+    .bento-overview {
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+    }
+
+    /* Two-col with phone */
+    .layout-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8mm;
+        flex: 1;
+        margin-top: 5mm;
+    }
+    .layout-2 .left, .layout-2 .right { display: flex; flex-direction: column; }
+
+    .phone-slot {
+        display: flex; align-items: center; justify-content: center;
+        flex: 1;
+    }
+    .phone-slot .phone { max-height: 155mm; }
+    .phone-slot .phone img { max-height: 150mm; width: auto; }
+
+    .stack { display: grid; gap: 5mm; flex: 1; }
+    .stack-2 { grid-template-rows: 1fr 1fr; }
+    .stack-3 { grid-template-rows: 1fr 1fr 1fr; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 2.5mm; margin-top: 3mm; }
+    .pill {
+        background: rgba(0, 113, 227, 0.08);
+        color: #0071E3;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2mm 4mm;
+        border-radius: 999px;
+        letter-spacing: -0.005em;
+    }
+    .card-dark .pill { background: rgba(255,255,255,0.1); color: #F5F5F7; }
+
+    .icon-square {
+        width: 14mm; height: 14mm;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px;
+        margin-bottom: 4mm;
+    }
+
+    /* Closing */
+    .closing {
+        background: #1D1D1F;
+        color: #F5F5F7;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .closing h1 {
+        font-size: 140px;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        color: #0A84FF;
+        margin-bottom: 10mm;
+    }
+    .closing p {
+        font-size: 24px;
+        opacity: 0.7;
+        max-width: 220mm;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+    }
+
+    /* Pricing */
+    .price-card {
+        background: #FFFFFF;
+        border-radius: 22px;
+        padding: 12mm;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    .price-card.featured {
+        background: linear-gradient(160deg, #0071E3 0%, #5E5CE6 100%);
+        color: #fff;
+    }
+    .price-card .plan {
+        font-size: 16px;
+        font-weight: 600;
+        opacity: 0.7;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        margin-bottom: 6mm;
+    }
+    .price-card .amount {
+        font-size: 72px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+    .price-card .per {
+        font-size: 14px;
+        opacity: 0.7;
+        margin-top: 3mm;
+    }
+    .price-card ul { list-style: none; margin-top: 8mm; }
+    .price-card li {
+        font-size: 14px;
+        padding: 2mm 0;
+        opacity: 0.85;
+        line-height: 1.4;
+    }
+    .price-card li::before { content: "✓ "; font-weight: 700; }
+    .price-card .badge {
+        position: absolute;
+        top: 8mm; right: 8mm;
+        background: rgba(255,255,255,0.2);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 2mm 4mm;
+        border-radius: 999px;
+    }
+</style>
+</head>
+<body>
+
+<!-- 1. COVER -->
+<section class="slide cover">
+    <div class="kicker">PDD KZ</div>
+    <h1>Hello,<br>driver.</h1>
+    <div class="tagline">A new way to prepare for Kazakhstan's traffic-rule exam — adaptive, intelligent, and personal.</div>
+    <div class="meta">PRODUCT PRESENTATION · 2026</div>
+</section>
+
+<!-- 2. SECTION HERO -->
+<section class="slide section-hero">
+    <div class="kicker">The product</div>
+    <h2>One app.<br>Three surfaces.<br><span class="gradient-text">Endless practice.</span></h2>
+    <p>PDD KZ lives on iPhone, syncs to Apple Watch, and surfaces your streak on the Home Screen. Built entirely with SwiftUI and powered by Apple Intelligence.</p>
+</section>
+
+<!-- 3. BENTO OVERVIEW -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="margin-bottom:3mm">Highlights</div>
+    <h2 class="display display-md" style="margin-bottom:0">Get the highlights.</h2>
+
+    <div class="bento bento-overview" style="margin-top:6mm">
+        <!-- Big hero phone card -->
+        <div class="card card-blue" style="grid-column: span 2; grid-row: span 4; padding: 6mm; align-items:center; justify-content:space-between;">
+            <div style="text-align:center; width: 100%;">
+                <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; margin-top: 2mm;">The bank</div>
+                <div style="font-size: 30px; font-weight: 700; letter-spacing: -0.03em; margin-top: 4mm; line-height: 1.05;">848 questions.<br>Full bank.</div>
+                <div style="font-size: 13px; opacity: 0.85; margin-top: 3mm;">Offline-ready. Officially aligned.</div>
+            </div>
+            <div class="phone" style="max-width: 58mm; transform: rotate(-3deg); margin-top: 4mm;">
+                <img src="screens/tests.png" alt="PDD KZ">
+            </div>
+            <div></div>
+        </div>
+
+        <!-- AI tutor -->
+        <div class="card" style="grid-column: span 2; grid-row: span 2;">
+            <div class="kicker" style="color:#0071E3">AI TUTOR</div>
+            <div class="title" style="margin-top:3mm">Meet Akzhol.</div>
+            <div class="body">A Kazakh traffic-inspector persona that explains rules, reviews mistakes, and reads road-sign photos.</div>
+            <div class="pill-row">
+                <span class="pill">Apple Intelligence</span>
+                <span class="pill">Gemini 2.5</span>
+            </div>
+        </div>
+
+        <!-- Streak -->
+        <div class="card card-grad-b" style="grid-column: span 1; grid-row: span 2;">
+            <div class="kicker" style="color:rgba(255,255,255,0.85)">STREAK</div>
+            <div class="big" style="margin-top:6mm">🔥</div>
+            <div class="title">Daily fire.</div>
+            <div class="sub">Mon–Sun progress. Best record kept.</div>
+        </div>
+
+        <!-- Languages -->
+        <div class="card card-grad-a" style="grid-column: span 1; grid-row: span 2;">
+            <div class="kicker" style="color:rgba(255,255,255,0.85)">LANGUAGES</div>
+            <div class="big" style="margin-top:6mm">3</div>
+            <div class="title">RU · KK · EN</div>
+            <div class="sub">Switchable at runtime.</div>
+        </div>
+
+        <!-- Mistakes -->
+        <div class="card card-dark" style="grid-column: span 2; grid-row: span 1;">
+            <div class="title">Mistake-driven loop.</div>
+            <div class="body">Every wrong answer is saved and re-asked until you master it.</div>
+        </div>
+
+        <!-- Watch -->
+        <div class="card" style="grid-column: span 1; grid-row: span 1; align-items:center; justify-content:center; text-align:center;">
+            <div style="font-size: 32px">⌚</div>
+            <div class="title" style="font-size: 14px; margin-top: 2mm">Apple Watch</div>
+        </div>
+
+        <!-- Widget -->
+        <div class="card card-mint" style="grid-column: span 1; grid-row: span 1; align-items:center; justify-content:center; text-align:center;">
+            <div style="font-size: 28px">🧱</div>
+            <div class="title" style="font-size: 14px; margin-top: 2mm">Widgets</div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. AKZHOL DEEP DIVE -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 01 · AI TUTOR</div>
+    <h2 class="display display-md" style="margin-top:3mm">Akzhol.<br><span class="muted" style="font-weight:500">Always on. Always patient.</span></h2>
+
+    <div class="layout-2" style="margin-top:7mm">
+        <div class="left phone-slot">
+            <div class="phone"><img src="screens/akzhol.png" alt="Akzhol"></div>
+        </div>
+        <div class="right stack stack-3">
+            <div class="card">
+                <div class="title">On-device by default.</div>
+                <div class="body">Text questions run through Apple Intelligence locally. Fast, private, and free of network costs.</div>
+            </div>
+            <div class="card card-dark">
+                <div class="title">Cloud when it matters.</div>
+                <div class="body">Photos of signs and richer explanations fall back to Gemini 2.5 Flash with automatic retries.</div>
+            </div>
+            <div class="card">
+                <div class="title">Reviews your mistakes.</div>
+                <div class="body">After a failed quiz, Akzhol receives the list of wrong answers and walks you through each one.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 5. TESTS DEEP DIVE -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 02 · PRACTICE</div>
+    <h2 class="display display-md" style="margin-top:3mm">Trial exams.<br><span class="muted" style="font-weight:500">Tuned to how you learn.</span></h2>
+
+    <div class="layout-2" style="margin-top:7mm">
+        <div class="left stack stack-3">
+            <div class="card card-blue">
+                <div class="title">Standard Trial Exam</div>
+                <div class="body">30–50 questions on a timer, modeled after the real Kazakhstan exam — including pass/fail thresholds.</div>
+            </div>
+            <div class="card">
+                <div class="title">Individual Testing</div>
+                <div class="body">Adaptive sessions built only from your personal mistake bank. Unlocks the moment you make a wrong move.</div>
+            </div>
+            <div class="card card-grad-a">
+                <div class="title">Road Sign Detector</div>
+                <div class="body">Snap a photo of a sign and Akzhol identifies and explains it in your language.</div>
+            </div>
+        </div>
+        <div class="right phone-slot">
+            <div class="phone"><img src="screens/tests.png" alt="Tests"></div>
+        </div>
+    </div>
+</section>
+
+<!-- 6. ENGAGEMENT / STREAK -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 03 · ENGAGEMENT</div>
+    <h2 class="display display-md" style="margin-top:3mm">Show up daily.<br><span class="gradient-text">Watch yourself grow.</span></h2>
+
+    <div class="layout-2" style="margin-top:7mm">
+        <div class="left phone-slot">
+            <div class="phone"><img src="screens/profile.png" alt="Profile"></div>
+        </div>
+        <div class="right stack stack-3">
+            <div class="card card-grad-b">
+                <div class="title">Daily streaks.</div>
+                <div class="body">A weekly fire indicator turns Monday-through-Sunday into a habit that's hard to break.</div>
+            </div>
+            <div class="card">
+                <div class="title">Level progression.</div>
+                <div class="body">Three tiers — Learner, Driver, Expert — based on correct answers across the full 848-question bank.</div>
+            </div>
+            <div class="card card-dark">
+                <div class="title">Personal identity.</div>
+                <div class="body">Sign in with Apple or Google, or stay in guest mode. License category, language, and toggles are yours.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 7. ECOSYSTEM BENTO -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 04 · ECOSYSTEM</div>
+    <h2 class="display display-md" style="margin-top:3mm">Everywhere<br>you look.</h2>
+
+    <div class="bento" style="grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; margin-top:7mm">
+        <div class="card" style="grid-row: span 2;">
+            <div class="icon-square" style="background: #E8F0FE; color: #0071E3;">📱</div>
+            <div class="title">iPhone</div>
+            <div class="body">The hub. Full SwiftUI experience: Tests, Akzhol, Profile, Video Lessons. Writes shared snapshots after every quiz.</div>
+            <div class="pill-row" style="margin-top: auto; padding-top: 6mm">
+                <span class="pill">SwiftUI</span>
+                <span class="pill">@Observable</span>
+                <span class="pill">iOS 26</span>
+            </div>
+        </div>
+        <div class="card card-dark">
+            <div class="icon-square" style="background: rgba(255,255,255,0.1)">⌚</div>
+            <div class="title">Apple Watch</div>
+            <div class="body">Streak, best record, and total correct answers on your wrist. Synced via WatchConnectivity.</div>
+        </div>
+        <div class="card card-mint">
+            <div class="icon-square" style="background: rgba(255,255,255,0.2)">🧱</div>
+            <div class="title">Widgets</div>
+            <div class="body">Home & Lock Screen widgets reading a shared App Group snapshot. Small, medium, and accessory-circular.</div>
+        </div>
+        <div class="card card-blue" style="grid-column: span 2">
+            <div class="title" style="font-size: 26px">One source of truth.</div>
+            <div class="body" style="font-size: 16px; margin-top: 3mm; max-width: 80%;">App Groups + WatchConnectivity keep every surface in sync. Take a quiz on iPhone, see the streak update on the Watch and in the widget — instantly.</div>
+        </div>
+    </div>
+</section>
+
+<!-- 8. ARCHITECTURE BENTO -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 05 · UNDER THE HOOD</div>
+    <h2 class="display display-md" style="margin-top:3mm">Native through<br>and through.</h2>
+
+    <div class="bento" style="grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; margin-top:7mm">
+        <div class="card">
+            <div class="kicker" style="color:#0071E3">AI</div>
+            <div class="title" style="margin-top:2mm">OnDeviceAkzhol</div>
+            <div class="body">FoundationModels for private on-device inference.</div>
+        </div>
+        <div class="card">
+            <div class="kicker" style="color:#0071E3">AI</div>
+            <div class="title" style="margin-top:2mm">AkzholService</div>
+            <div class="body">Gemini 2.5 Flash for images and rich explanations.</div>
+        </div>
+        <div class="card card-dark">
+            <div class="kicker" style="color:#5AC8FA">AUTH</div>
+            <div class="title" style="margin-top:2mm">FirebaseAuthService</div>
+            <div class="body">Sign in with Apple &amp; Google. Demo mode for guests.</div>
+        </div>
+        <div class="card">
+            <div class="kicker" style="color:#0071E3">STATE</div>
+            <div class="title" style="margin-top:2mm">Session</div>
+            <div class="body">User, language, haptics, sound — observable, persisted.</div>
+        </div>
+        <div class="card card-grad-a">
+            <div class="kicker" style="color:rgba(255,255,255,0.85)">DATA</div>
+            <div class="title" style="margin-top:2mm">Stores</div>
+            <div class="body">ProgressStore · StreakStore · MistakesBank · TestHistory · Favorites</div>
+        </div>
+        <div class="card">
+            <div class="kicker" style="color:#0071E3">SYNC</div>
+            <div class="title" style="margin-top:2mm">PhoneWatchSync</div>
+            <div class="body">Snapshots over WatchConnectivity on every quiz.</div>
+        </div>
+        <div class="card">
+            <div class="kicker" style="color:#0071E3">SUBSCRIPTION</div>
+            <div class="title" style="margin-top:2mm">SubscriptionGate</div>
+            <div class="body">Entitlement abstraction. RevenueCat ready.</div>
+        </div>
+        <div class="card card-blue">
+            <div class="kicker" style="color:rgba(255,255,255,0.85)">QUESTIONS</div>
+            <div class="title" style="margin-top:2mm">QuestionBank</div>
+            <div class="body">848 questions. FNV-1a deterministic selection.</div>
+        </div>
+    </div>
+</section>
+
+<!-- 9. PRICING -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 06 · PRICING</div>
+    <h2 class="display display-md" style="margin-top:3mm">Start with<br><span class="gradient-text">3 days free.</span></h2>
+    <p style="font-size:18px; color:#424245; margin-top:4mm; max-width: 220mm;">Free users get the full question bank and basic tests. Premium removes every cap, unlocks the video lessons, and powers unlimited Akzhol chats.</p>
+
+    <div style="display:flex; gap:6mm; flex:1; margin-top:8mm; padding-bottom: 8mm;">
+        <div class="price-card">
+            <div class="plan" style="color:#6E6E73">Weekly</div>
+            <div class="amount">990 ₸</div>
+            <div class="per">~141 ₸ / day</div>
+            <ul>
+                <li>Unlimited Akzhol chats</li>
+                <li>Full video lessons</li>
+                <li>Personal mistake analysis</li>
+                <li>Cancel anytime</li>
+            </ul>
+        </div>
+        <div class="price-card featured">
+            <div class="badge">Best Deal</div>
+            <div class="plan">Monthly</div>
+            <div class="amount">2 490 ₸</div>
+            <div class="per">~83 ₸ / day</div>
+            <ul>
+                <li>Everything in Weekly</li>
+                <li>Best price per day</li>
+                <li>3-day free trial</li>
+                <li>Auto-renews monthly</li>
+            </ul>
+        </div>
+        <div class="price-card" style="background: transparent; border: 1px dashed #D2D2D7; box-shadow:none">
+            <div class="plan" style="color:#6E6E73">Free</div>
+            <div class="amount" style="color:#1D1D1F">0 ₸</div>
+            <div class="per">Forever</div>
+            <ul style="color:#1D1D1F">
+                <li>Full 848 question bank</li>
+                <li>Standard trial exams</li>
+                <li>Daily streak &amp; profile</li>
+                <li>Limited Akzhol messages</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- 10. ONBOARDING + PAYWALL -->
+<section class="slide" style="padding-top:12mm">
+    <div class="kicker" style="color:#0071E3">CHAPTER 07 · FIRST IMPRESSION</div>
+    <h2 class="display display-md" style="margin-top:3mm">From launch<br>to first quiz<br><span class="gradient-text">in 60 seconds.</span></h2>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; flex:1; margin-top: 7mm; align-items: stretch;">
+        <div class="card" style="padding: 8mm; align-items:center; justify-content:center; text-align:center;">
+            <div class="phone" style="max-width: 60mm;"><img src="screens/onboarding.png" alt="Onboarding"></div>
+            <div class="title" style="margin-top: 6mm">Onboarding</div>
+            <div class="body">Carousel, survey, then Apple / Google / Demo auth.</div>
+        </div>
+        <div class="card" style="padding: 8mm; align-items:center; justify-content:center; text-align:center;">
+            <div class="phone" style="max-width: 60mm;"><img src="screens/paywall.png" alt="Paywall"></div>
+            <div class="title" style="margin-top: 6mm">Paywall</div>
+            <div class="body">Clean 3-day trial. RevenueCat-ready integration.</div>
+        </div>
+        <div class="stack stack-2">
+            <div class="card card-dark">
+                <div class="title">Designed to convert.</div>
+                <div class="body">Value-prop carousel and social-proof stats prime the user before the paywall.</div>
+            </div>
+            <div class="card card-blue">
+                <div class="title">Guest mode included.</div>
+                <div class="body">Try the app instantly with no account. Upgrade to Apple or Google later, without losing progress.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 11. CLOSING -->
+<section class="slide closing">
+    <h1>Drive forward.</h1>
+    <p>Built with SwiftUI. Powered by Apple Intelligence. Ready for the App Store.</p>
+    <p style="margin-top:18mm; font-size:12px; opacity:0.5; letter-spacing:0.3em">PDD KZ &nbsp;·&nbsp; 2026</p>
+</section>
+
+</body>
+</html>

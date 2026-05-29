@@ -22,6 +22,8 @@
 	<true/>
 	<key>GIDClientID</key>
 	<string>901010910329-30ol357b89kd8ads5t6qcqcksn0rpodd.apps.googleusercontent.com</string>
+	<key>GEMINI_API_KEY</key>
+	<string>AIzaSyDJM-7Trz2xVf0sWM-QWDke_CiYIb_C_cw</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
