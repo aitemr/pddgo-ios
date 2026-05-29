@@ -75,6 +75,9 @@ struct PDDTabBar: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(tab.title)
+                .accessibilityAddTraits(on ? [.isButton, .isSelected] : .isButton)
             }
         }
         .padding(.horizontal, 8)

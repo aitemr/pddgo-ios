@@ -71,7 +71,9 @@ struct ChatInputBar: View {
                                             Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
                                                 .foregroundStyle(.white).frame(width: 18, height: 18)
                                                 .background(.black.opacity(0.54), in: Circle())
-                                        }.padding(4)
+                                        }
+                                        .accessibilityLabel(L.chatRemovePhoto)
+                                        .padding(4)
                                     }
                             }
                         }
@@ -89,12 +91,14 @@ struct ChatInputBar: View {
                         Image(systemName: "camera.fill").font(.system(size: 20)).foregroundStyle(.white)
                             .frame(width: 42, height: 42).background(Color(hex: "#7B61FF"), in: Circle())
                     }.buttonStyle(.plain)
+                    .accessibilityLabel(L.chatAttachPhoto)
                 }
                 Button(action: vm.send) {
                     Image(systemName: "paperplane.fill").font(.system(size: 17)).foregroundStyle(.white)
                         .frame(width: 42, height: 42)
                         .background(Color(hex: "#3B82F6"), in: RoundedRectangle(cornerRadius: 30))
                 }.buttonStyle(.plain)
+                .accessibilityLabel(L.chatSend)
             }
             .padding(.leading, 16).padding(.trailing, showCamera ? 10 : 16)
             .frame(height: 72)

@@ -110,6 +110,10 @@ enum L {
     static var akzholName: String   { Localizer.pick(ru: "Акжол", kk: "Ақжол", en: "Akzhol") }
     static var akzholRole: String   { Localizer.pick(ru: "Сотрудник МВД РК", kk: "ҚР ІІМ қызметкері", en: "Officer, MIA RK") }
     static var chatInputHint: String { Localizer.pick(ru: "Напишите свой вопрос", kk: "Сұрағыңызды жазыңыз", en: "Type your question") }
+    static var chatSend: String { Localizer.pick(ru: "Отправить", kk: "Жіберу", en: "Send") }
+    static var navBack: String { Localizer.pick(ru: "Назад", kk: "Артқа", en: "Back") }
+    static var chatAttachPhoto: String { Localizer.pick(ru: "Прикрепить фото", kk: "Сурет тіркеу", en: "Attach photo") }
+    static var chatRemovePhoto: String { Localizer.pick(ru: "Удалить фото", kk: "Суретті жою", en: "Remove photo") }
     static var akzholCard1Title: String { Localizer.pick(ru: "С решением вопросов\nпо ПДД РК", kk: "ПДД РК бойынша\nмәселелерді шешуде", en: "Resolving questions\nabout PDD RK") }
     static var akzholCard1Subtitle: String { Localizer.pick(
         ru: "Оформление ДТП, спорные ситуации и\nвзаимодействие с органами — быстро,\nпрофессионально и в рамках закона",

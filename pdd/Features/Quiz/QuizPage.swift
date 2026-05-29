@@ -176,6 +176,8 @@ struct QuizPage: View {
                 .overlay(Circle().stroke(Color(hex: "#E0E0E0"), lineWidth: 1.5))
                 .opacity((!interactive || dimmed) ? 0.32 : 1)
         }.buttonStyle(.plain).disabled(!interactive)
+        .accessibilityLabel(icon.hasPrefix("chevron") ? L.navBack : L.favoritesTitle)
+        .accessibilityAddTraits(icon == "star.fill" ? [.isButton, .isSelected] : .isButton)
     }
 
     private func primaryAction() {
